@@ -22,17 +22,13 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ./htdocs/
+          dangerous-clean-slate: true
           exclude: |
-            .git/
             .git
-            .gitignore
-            .gitattributes
-            .github/
+            .github
             .env
-            node_modules/
+            node_modules
             database/127_0_0_1.sql
             database/ziyafat1450_schema.sql
             railway.toml
-            README.md
-            LICENSE
 

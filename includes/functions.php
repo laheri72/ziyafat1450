@@ -20,13 +20,6 @@ function is_admin() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
 
-// Check if user is finance admin
-function is_finance_admin() {
-    init_session();
-    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin' 
-           && isset($_SESSION['admin_type']) && $_SESSION['admin_type'] === 'finance_admin';
-}
-
 // Check if user is amali coordinator
 function is_amali_coordinator() {
     init_session();
@@ -57,11 +50,6 @@ function is_super_admin() {
     init_session();
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin' 
            && isset($_SESSION['admin_type']) && $_SESSION['admin_type'] === 'super_admin';
-}
-
-// Check if user has access to financial data
-function has_finance_access() {
-    return is_super_admin() || is_finance_admin();
 }
 
 // Check if user has access to amali data
@@ -132,134 +120,10 @@ function clean_input($data) {
     return $data;
 }
 
-// Format currency
-function format_currency($amount, $currency = 'USD') {
-    if ($currency === 'USD') {
-        return '$' . number_format($amount, 2);
-    } else {
-        return '₹' . number_format($amount, 2);
-    }
-}
-
 // Calculate percentage
 function calculate_percentage($part, $total) {
     if ($total == 0) return 0;
     return round(($part / $total) * 100, 2);
-}
-
-// Get user contributions with waterfall distribution logic
-function get_user_contributions($conn, $user_id) {
-    $sql = "SELECT 
-                COALESCE(SUM(amount_usd), 0) as total_usd,
-                COALESCE(SUM(amount_inr), 0) as total_inr
-            FROM contributions 
-            WHERE user_id = ?";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $data = $result->fetch_assoc();
-    
-    // Year targets in INR (cumulative sequential order)
-    // Total target is 127,000 INR split as: 66k + 31k + 30k
-    $tasea_target = 66000;      // First 66k goes to Tasea
-    $ashera_target = 31000;     // Next 31k goes to Ashera (reaching 97k)
-    $hadi_target = 30000;       // Next 30k goes to Hadi Ashara (reaching 127k)
-    
-    // Total paid in INR
-    $total_paid_inr = $data['total_inr'];
-    
-    // Distribute payments sequentially (waterfall logic)
-    // Fill Tasea first (0 to 66k)
-    $tasea_paid = min($total_paid_inr, $tasea_target);
-    $remaining_after_tasea = max(0, $total_paid_inr - $tasea_target);
-    
-    // Fill Ashera next (66k to 97k)
-    $ashera_paid = min($remaining_after_tasea, $ashera_target);
-    $remaining_after_ashera = max(0, $remaining_after_tasea - $ashera_target);
-    
-    // Fill Hadi Ashara last (97k to 127k)
-    $hadi_paid = min($remaining_after_ashera, $hadi_target);
-    
-    // Convert to USD (approximate)
-    $exchange_rate = 84.67;
-    
-    $data['current_year_inr'] = $tasea_paid;
-    $data['current_year_usd'] = $tasea_paid / $exchange_rate;
-    
-    $data['next_year_inr'] = $ashera_paid;
-    $data['next_year_usd'] = $ashera_paid / $exchange_rate;
-    
-    $data['final_year_inr'] = $hadi_paid;
-    $data['final_year_usd'] = $hadi_paid / $exchange_rate;
-    
-    return $data;
-}
-
-// Get system settings
-function get_system_settings($conn) {
-    $sql = "SELECT * FROM system_settings LIMIT 1";
-    $result = $conn->query($sql);
-    return $result->fetch_assoc();
-}
-
-// Get all contributions for admin with waterfall distribution logic
-function get_all_contributions($conn) {
-    // Get total contributions
-    $sql = "SELECT 
-                COALESCE(SUM(c.amount_usd), 0) as total_usd,
-                COALESCE(SUM(c.amount_inr), 0) as total_inr
-            FROM contributions c
-            JOIN users u ON c.user_id = u.id
-            WHERE u.category = 'Surat'";
-    
-    $result = $conn->query($sql);
-    $data = $result->fetch_assoc();
-    
-    // Get total users count
-    $sql_users = "SELECT COUNT(*) as total FROM users WHERE role = 'user' AND category = 'Surat'";
-    $result_users = $conn->query($sql_users);
-    $total_users = $result_users->fetch_assoc()['total'];
-    
-    // Year targets in INR per user
-    $tasea_target_per_user = 66000;
-    $ashera_target_per_user = 31000;
-    $hadi_target_per_user = 30000;
-    
-    // Total targets for all users
-    $tasea_target_total = $tasea_target_per_user * $total_users;
-    $ashera_target_total = $ashera_target_per_user * $total_users;
-    $hadi_target_total = $hadi_target_per_user * $total_users;
-    
-    // Total paid in INR
-    $total_paid_inr = $data['total_inr'];
-    
-    // Distribute payments sequentially (waterfall logic)
-    // Fill Tasea first
-    $tasea_paid = min($total_paid_inr, $tasea_target_total);
-    $remaining_after_tasea = max(0, $total_paid_inr - $tasea_target_total);
-    
-    // Fill Ashera next
-    $ashera_paid = min($remaining_after_tasea, $ashera_target_total);
-    $remaining_after_ashera = max(0, $remaining_after_tasea - $ashera_target_total);
-    
-    // Fill Hadi Ashara last
-    $hadi_paid = min($remaining_after_ashera, $hadi_target_total);
-    
-    // Convert to USD (approximate)
-    $exchange_rate = 84.67;
-    
-    $data['current_year_inr'] = $tasea_paid;
-    $data['current_year_usd'] = $tasea_paid / $exchange_rate;
-    
-    $data['next_year_inr'] = $ashera_paid;
-    $data['next_year_usd'] = $ashera_paid / $exchange_rate;
-    
-    $data['final_year_inr'] = $hadi_paid;
-    $data['final_year_usd'] = $hadi_paid / $exchange_rate;
-    
-    return $data;
 }
 
 // Generate CSRF token
@@ -449,36 +313,4 @@ function get_amali_summary($conn, $user_id) {
     return array_merge($quran_data, $dua_data, $book_data);
 }
 
-// Get payment year label based on payment date
-function get_payment_year_from_date($payment_date) {
-    $date = new DateTime($payment_date);
-    $year = (int)$date->format('Y');
-    $month = (int)$date->format('m');
-    
-    // Determine which year period based on Apr-Mar fiscal year
-    // Sabea: Apr 2023 - Mar 2024
-    if (($year == 2023 && $month >= 4) || ($year == 2024 && $month <= 3)) {
-        return 'Sabea (Apr 23 - Mar 24)';
-    }
-    // Samena: Apr 2024 - Mar 2025
-    elseif (($year == 2024 && $month >= 4) || ($year == 2025 && $month <= 3)) {
-        return 'Samena (Apr 24 - Mar 25)';
-    }
-    // Tasea: Apr 2025 - Mar 2026
-    elseif (($year == 2025 && $month >= 4) || ($year == 2026 && $month <= 3)) {
-        return 'Tasea (Apr 25 - Mar 26)';
-    }
-    // Ashera: Apr 2026 - Mar 2027
-    elseif (($year == 2026 && $month >= 4) || ($year == 2027 && $month <= 3)) {
-        return 'Ashera (Apr 26 - Mar 27)';
-    }
-    // Hadi Ashara: Apr 2027 onwards
-    elseif ($year >= 2027 && $month >= 4) {
-        return 'Hadi Ashara (Apr 27+)';
-    }
-    // Default fallback
-    else {
-        return 'Unknown Period';
-    }
-}
 ?>

@@ -44,12 +44,6 @@ $dua_progress_detail = get_dua_progress($conn, $user_id, 'dua');
 $tasbeeh_progress_detail = get_dua_progress($conn, $user_id, 'tasbeeh');
 $namaz_progress_detail = get_dua_progress($conn, $user_id, 'namaz');
 
-// Get finance data
-$settings = get_system_settings($conn);
-$contributions = get_user_contributions($conn, $user_id);
-$finance_progress = calculate_percentage($contributions['total_inr'], $settings['target_amount_inr']); 
-$remaining_inr = $settings['target_amount_inr'] - $contributions['total_inr'];
-
 require_once '../includes/header.php';
 ?>
 
@@ -155,42 +149,7 @@ require_once '../includes/header.php';
             <div class="stat-label">Current Istinsakh</div>
         </div>
 
-        <?php if ($user['category'] === 'Surat'): ?>
-        <div class="stat-card" style="border-left: 4px solid #10b981;">
-            <div class="stat-card-header">
-                <h4>Contribution Paid</h4>
-                <div class="stat-icon" style="color: #10b981;">
-                    <i class="fas fa-hand-holding-heart"></i>
-                </div>
-            </div>
-            <div class="stat-value"><?php echo format_currency($contributions['total_inr'], 'INR'); ?></div>
-            <div class="stat-label">Remaining: <?php echo format_currency($remaining_inr, 'INR'); ?></div>
-        </div>
-        <?php endif; ?>
     </div>
-
-    <?php if ($user['category'] === 'Surat'): ?>
-    <!-- Finance Progress Overview -->
-    <div class="card" style="border-top: 4px solid #10b981;">
-        <div class="card-header">
-            <h3><i class="fas fa-hand-holding-usd"></i> Ziyafat Contribution Progress</h3>
-        </div>
-        <div class="progress-container">
-            <div class="progress-label">
-                <span class="progress-label-text">Paid: <?php echo format_currency($contributions['total_inr'], 'INR'); ?> / <?php echo format_currency($settings['target_amount_inr'], 'INR'); ?></span>
-                <span class="progress-label-value"><?php echo $finance_progress; ?>%</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: <?php echo $finance_progress; ?>%; background: linear-gradient(90deg, #10b981, #059669);"></div>
-            </div>
-        </div>
-        <p class="text-center mt-2">
-            <a href="surat_finance_report.php" class="btn btn-success" style="background-color: #10b981; border-color: #059669;">
-                <i class="fas fa-file-invoice-dollar"></i> View Detailed Finance Report
-            </a>
-        </p>
-    </div>
-    <?php endif; ?>
 
     <!-- Quran Progress Overview -->
     <div class="card">

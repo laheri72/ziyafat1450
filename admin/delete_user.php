@@ -22,12 +22,7 @@ if (!$target_user) {
     exit();
 }
 
-if (is_finance_admin() && !is_super_admin() && $target_user['role'] === 'admin') {
-    header('Location: view_users.php?error=Finance coordinator cannot delete admin accounts');
-    exit();
-}
-
-// Delete user (contributions will be deleted automatically due to CASCADE)
+// Delete user
 $sql = "DELETE FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);

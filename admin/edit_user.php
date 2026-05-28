@@ -31,11 +31,6 @@ if (!$user) {
     exit();
 }
 
-if (is_finance_admin() && !is_super_admin() && $user['role'] === 'admin') {
-    header('Location: view_users.php?error=Finance coordinator cannot edit admin accounts');
-    exit();
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['reset_password'])) {
         if (is_super_admin()) {
@@ -411,7 +406,6 @@ require_once '../includes/header.php';
                 <select id="admin_type" name="admin_type" class="form-control">
                     <option value="">Select Admin Type</option>
                     <option value="super_admin" <?php echo $user['admin_type'] === 'super_admin' ? 'selected' : ''; ?>>Super Admin (Full Access)</option>
-                    <option value="finance_admin" <?php echo $user['admin_type'] === 'finance_admin' ? 'selected' : ''; ?>>Finance Admin</option>
                     <option value="amali_coordinator" <?php echo $user['admin_type'] === 'amali_coordinator' ? 'selected' : ''; ?>>Amali Coordinator (All Categories)</option>
                     <option value="surat_amali_coordinator" <?php echo $user['admin_type'] === 'surat_amali_coordinator' ? 'selected' : ''; ?>>Surat Amali Coordinator</option>
                     <option value="marol_amali_coordinator" <?php echo $user['admin_type'] === 'marol_amali_coordinator' ? 'selected' : ''; ?>>Marol Amali Coordinator</option>

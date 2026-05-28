@@ -14,14 +14,13 @@ $filter_category = isset($_GET['filter_category']) ? clean_input($_GET['filter_c
 // Check admin type and set category restrictions
 $is_category_coordinator = is_category_amali_coordinator();
 $assigned_category = get_assigned_category();
-$is_finance_coordinator = is_finance_admin() && !is_super_admin();
 
 // If category amali coordinator, force filter to their assigned category
 if ($is_category_coordinator && $assigned_category) {
     $filter_category = $assigned_category;
 }
 
-// Get all users with their contribution summary
+// Get all users
 $sql = "SELECT 
             u.id,
             u.its_number,
@@ -31,19 +30,15 @@ $sql = "SELECT
             u.email,
             u.phone_number,
             u.role,
-            u.created_at,
-            COALESCE(SUM(c.amount_usd), 0) as total_contributed_usd,
-            COALESCE(SUM(c.amount_inr), 0) as total_contributed_inr
+            u.created_at
         FROM users u
-        LEFT JOIN contributions c ON u.id = c.user_id
-        WHERE " . (has_finance_access() ? "(u.role = 'user' OR u.role = 'admin')" : "u.role = 'user'");
+        WHERE (u.role = 'user' OR u.role = 'admin')";
 
 if ($filter_category) {
     $sql .= " AND u.category = ?";
 }
 
-$sql .= " GROUP BY u.id
-          ORDER BY u.category, u.tr_number ASC";
+$sql .= " ORDER BY u.category, u.tr_number ASC";
 
 if ($filter_category) {
     $stmt = $conn->prepare($sql);
@@ -53,9 +48,6 @@ if ($filter_category) {
 } else {
     $users = $conn->query($sql);
 }
-
-// Get system settings for target amount
-$settings = get_system_settings($conn);
 
 require_once '../includes/header.php';
 ?>
@@ -96,7 +88,7 @@ require_once '../includes/header.php';
     <div class="card">
         <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <h3><i class="fas fa-users"></i> All <?php echo has_finance_access() ? 'Users & Admins' : 'Users'; ?> <?php echo $filter_category ? '- ' . htmlspecialchars($filter_category) : ''; ?></h3>
+                <h3><i class="fas fa-users"></i> All Users & Admins <?php echo $filter_category ? '- ' . htmlspecialchars($filter_category) : ''; ?></h3>
                 <div class="action-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
                     <input type="text" id="searchInput" class="form-control" placeholder="Search by name, ITS, or TR..." style="width: 280px; margin: 0;">
                     <button onclick="exportTableToCSV('dataTable', 'users.csv')" class="btn btn-success btn-sm">
@@ -123,20 +115,12 @@ require_once '../includes/header.php';
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Role</th>
-                            <th>Total (USD)</th>
-                            <th>Total (INR)</th>
-                            <th>Remaining</th>
-                            <th>Progress</th>
                             <th>Joined</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($user = $users->fetch_assoc()): 
-                            $remaining_usd = $settings['target_amount_usd'] - $user['total_contributed_usd'];
-                            $remaining_inr = $settings['target_amount_inr'] - $user['total_contributed_inr'];
-                            $progress = calculate_percentage($user['total_contributed_usd'], $settings['target_amount_usd']);
-                        ?>
+                        <?php while ($user = $users->fetch_assoc()): ?>
                             <tr>
                                 <td data-label="ITS"><?php echo htmlspecialchars($user['its_number']); ?></td>
                                 <td data-label="TR"><?php echo htmlspecialchars($user['tr_number']); ?></td>
@@ -155,26 +139,13 @@ require_once '../includes/header.php';
                                         <?php echo ucfirst($user['role']); ?>
                                     </span>
                                 </td>
-                                <td data-label="USD"><?php echo format_currency($user['total_contributed_usd']); ?></td>
-                                <td data-label="INR"><?php echo format_currency($user['total_contributed_inr'], 'INR'); ?></td>
-                                <td data-label="Rem.">
-                                    <div><?php echo format_currency($remaining_usd); ?></div>
-                                    <small style="color: #6b7280;"><?php echo format_currency($remaining_inr, 'INR'); ?></small>
-                                </td>
-                                <td data-label="Progress">
-                                    <div class="progress-bar" style="height: 20px; width: 100px;">
-                                        <div class="progress-fill" style="width: <?php echo $progress; ?>%; font-size: 0.7rem;">
-                                            <?php echo $progress; ?>%
-                                        </div>
-                                    </div>
-                                </td>
                                 <td data-label="Joined"><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
                                 <td data-label="Actions">
                                     <div class="action-buttons">
                                         <a href="user_details.php?id=<?php echo $user['id']; ?>" class="btn btn-primary btn-sm">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <?php if ($user['id'] != $_SESSION['user_id'] && !($is_finance_coordinator && $user['role'] === 'admin')): ?>
+                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                             <a href="delete_user.php?id=<?php echo $user['id']; ?>" 
                                                class="btn btn-danger btn-sm"
                                                onclick="return confirm('Are you sure you want to delete this user?')">

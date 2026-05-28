@@ -93,24 +93,6 @@ init_session();
                             <?php endif; ?>
                         </div>
 
-                        <?php if (has_finance_access()): ?>
-                            <div class="nav-section">
-                                <div class="nav-section-title">Finance Management</div>
-                                <div class="nav-item">
-                                    <a href="../admin/add_contribution.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'add_contribution.php' ? 'active' : ''; ?>">
-                                        <i class="fas fa-plus-circle"></i>
-                                        <span>Add Contribution</span>
-                                    </a>
-                                </div>
-                                <div class="nav-item">
-                                    <a href="../admin/reports.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : ''; ?>">
-                                        <i class="fas fa-chart-line"></i>
-                                        <span>Financial Reports</span>
-                                    </a>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
                         <?php if (has_amali_access()): ?>
                             <div class="nav-section">
                                 <div class="nav-section-title">Amali Janib</div>
@@ -152,18 +134,6 @@ init_session();
                                     <span>My Profile</span>
                                 </a>
                             </div>
-                            <?php 
-                            // Show Surat Finance Report only for Surat category users
-                            $current_user = get_user_by_id($GLOBALS['conn'], $_SESSION['user_id']);
-                            if ($current_user['category'] === 'Surat'): 
-                            ?>
-                            <div class="nav-item">
-                                <a href="../user/surat_finance_report.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'surat_finance_report.php' ? 'active' : ''; ?>">
-                                    <i class="fas fa-credit-card"></i>
-                                    <span>Finance Report</span>
-                                </a>
-                            </div>
-                            <?php endif; ?>
                         </div>
 
                         <div class="nav-section">

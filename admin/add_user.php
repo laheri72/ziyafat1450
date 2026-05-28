@@ -124,7 +124,6 @@ require_once '../includes/header.php';
                 <select id="admin_type" name="admin_type" class="form-control">
                     <option value="">Select Admin Type</option>
                     <option value="super_admin">Super Admin (Full Access)</option>
-                    <option value="finance_admin">Finance Admin</option>
                     <option value="amali_coordinator">Amali Coordinator</option>
                 </select>
             </div>

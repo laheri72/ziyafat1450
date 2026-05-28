@@ -62,7 +62,7 @@ require_once '../includes/header.php';
             <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 0;">
                 <a href="quran_tracking.php" class="btn btn-primary" style="flex-direction: column; padding: 1.5rem 1rem; gap: 10px;">
                     <i class="fas fa-quran" style="font-size: 1.5rem;"></i>
-                    <span>Quran Hifzan</span>
+                    <span>Quran Tilawat</span>
                 </a>
                 <a href="dua_tracking.php" class="btn btn-success" style="flex-direction: column; padding: 1.5rem 1rem; gap: 10px;">
                     <i class="fas fa-hands-praying" style="font-size: 1.5rem;"></i>

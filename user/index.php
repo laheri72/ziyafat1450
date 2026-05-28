@@ -70,7 +70,7 @@ require_once '../includes/header.php';
                 </a>
                 <a href="book_transcription.php" class="btn btn-warning" style="flex-direction: column; padding: 1.5rem 1rem; gap: 10px;">
                     <i class="fas fa-book" style="font-size: 1.5rem;"></i>
-                    <span>Istinsakh Al-Kutub</span>
+                    <span>Istinsakh Kutub</span>
                 </a>
             </div>
         </div>

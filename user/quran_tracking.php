@@ -372,6 +372,7 @@ require_once '../includes/header.php';
                 
                 // Clear selection
                 clearSelectedItems();
+                btn.innerHTML = originalContent;
                 syncModeUI();
                 updateFloatingButton();
             } else {

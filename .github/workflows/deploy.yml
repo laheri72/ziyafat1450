@@ -23,11 +23,16 @@ jobs:
           local-dir: ./
           server-dir: ./htdocs/
           exclude: |
-            .git*
+            .git/
+            .git
+            .gitignore
+            .gitattributes
+            .github/
             .env
             node_modules/
-            .github/
             database/127_0_0_1.sql
             database/ziyafat1450_schema.sql
             railway.toml
+            README.md
+            LICENSE
 

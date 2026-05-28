@@ -21,7 +21,7 @@ jobs:
           username: if0_42041374
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ./public_html/
+          server-dir: ./htdocs/
           dangerous-delete-include: |
             **/*.php
             **/*.js

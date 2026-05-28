@@ -35,6 +35,12 @@ if (!$data || !isset($data['selections']) || !is_array($data['selections'])) {
     exit();
 }
 
+$action = isset($data['action']) ? strtolower(trim($data['action'])) : 'complete';
+if (!in_array($action, ['complete', 'delete'], true)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid action requested']);
+    exit();
+}
+
 $selections = $data['selections'];
 $success_count = 0;
 $errors = [];
@@ -50,25 +56,49 @@ try {
         if ($quran_number < 1 || $quran_number > 4 || $juz_number < 1 || $juz_number > 30) {
             continue;
         }
-        
-        // Check if already completed
-        $check_sql = "SELECT id FROM quran_progress WHERE user_id = ? AND quran_number = ? AND juz_number = ?";
-        $check_stmt = $conn->prepare($check_sql);
-        $check_stmt->bind_param("iii", $user_id, $quran_number, $juz_number);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
-        
-        if ($check_result->num_rows === 0) {
-            // Insert new completion
-            $sql = "INSERT INTO quran_progress (user_id, quran_number, juz_number, is_completed, completed_date) 
-                    VALUES (?, ?, ?, 1, CURDATE())";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iii", $user_id, $quran_number, $juz_number);
-            
-            if ($stmt->execute()) {
-                $success_count++;
-            } else {
-                $errors[] = "Failed to update progress for Quran $quran_number Juz $juz_number";
+
+        if ($action === 'complete') {
+            // Check if already completed
+            $check_sql = "SELECT id FROM quran_progress WHERE user_id = ? AND quran_number = ? AND juz_number = ? AND is_completed = 1";
+            $check_stmt = $conn->prepare($check_sql);
+            $check_stmt->bind_param("iii", $user_id, $quran_number, $juz_number);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
+
+            if ($check_result->num_rows === 0) {
+                // Insert new completion
+                $sql = "INSERT INTO quran_progress (user_id, quran_number, juz_number, is_completed, completed_date) 
+                        VALUES (?, ?, ?, 1, CURDATE())";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("iii", $user_id, $quran_number, $juz_number);
+
+                if ($stmt->execute()) {
+                    $success_count++;
+                } else {
+                    $errors[] = "Failed to update progress for Quran $quran_number Juz $juz_number";
+                }
+            }
+        } else {
+            $delete_sql = "SELECT id FROM quran_progress 
+                           WHERE user_id = ? AND quran_number = ? AND juz_number = ? AND is_completed = 1 
+                           ORDER BY completed_date DESC, created_at DESC, id DESC 
+                           LIMIT 1";
+            $delete_stmt = $conn->prepare($delete_sql);
+            $delete_stmt->bind_param("iii", $user_id, $quran_number, $juz_number);
+            $delete_stmt->execute();
+            $delete_result = $delete_stmt->get_result();
+
+            if ($delete_result->num_rows > 0) {
+                $row = $delete_result->fetch_assoc();
+                $remove_sql = "DELETE FROM quran_progress WHERE id = ?";
+                $remove_stmt = $conn->prepare($remove_sql);
+                $remove_stmt->bind_param("i", $row['id']);
+
+                if ($remove_stmt->execute()) {
+                    $success_count++;
+                } else {
+                    $errors[] = "Failed to delete progress for Quran $quran_number Juz $juz_number";
+                }
             }
         }
     }
@@ -91,9 +121,12 @@ try {
     
     echo json_encode([
         'success' => true,
-        'message' => $success_count > 0 ? "$success_count Juz marked as completed!" : "No new progress to update.",
+        'message' => $action === 'complete'
+            ? ($success_count > 0 ? "$success_count Juz marked as completed!" : "No new progress to update.")
+            : ($success_count > 0 ? "$success_count completed log(s) deleted successfully!" : "No matching completed progress found to delete."),
         'overall_progress' => $quran_progress,
         'quran_counts' => $quran_counts,
+        'action' => $action,
         'errors' => $errors
     ]);
     

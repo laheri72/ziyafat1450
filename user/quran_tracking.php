@@ -88,6 +88,48 @@ require_once '../includes/header.php';
         font-size: 0.8rem;
         padding: 4px 10px;
     }
+    .tracking-mode-switch {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 16px 0 6px;
+    }
+    .tracking-mode-btn {
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .tracking-mode-btn.active {
+        border-color: var(--primary-500);
+        background: var(--primary-50);
+        color: var(--primary-700);
+    }
+    .tracking-mode-btn.delete.active {
+        border-color: #dc2626;
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+    .tracking-help {
+        margin: 8px 0 0;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+    .juz-item.selected.delete-mode {
+        border-color: #dc2626;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+    .juz-item.selected.delete-mode::after {
+        content: '\f2ed';
+    }
+    .floating-actions .btn {
+        min-width: 220px;
+    }
 </style>
 
 <div class="container">
@@ -96,7 +138,15 @@ require_once '../includes/header.php';
             <i class="fas fa-home"></i> Back to Home
         </a>
         <h1><i class="fas fa-quran"></i> Quran Recitation Tracking</h1>
-        <p>Select multiple Juz and save your progress without reloading.</p>
+        <p class="tracking-help">Mark new completions or delete an exact completion log to restore a juz back to incomplete.</p>
+        <div class="tracking-mode-switch" role="tablist" aria-label="Quran tracking mode">
+            <button type="button" class="tracking-mode-btn active" id="mode-complete" onclick="setTrackingMode('complete')">
+                <i class="fas fa-check-circle"></i> Add Progress
+            </button>
+            <button type="button" class="tracking-mode-btn delete" id="mode-delete" onclick="setTrackingMode('delete')">
+                <i class="fas fa-trash-alt"></i> Delete Progress
+            </button>
+        </div>
     </div>
 
     <div id="ajax-alert" style="display: none;"></div>
@@ -135,7 +185,7 @@ require_once '../includes/header.php';
                 (<span id="quran-percent-<?php echo $quran; ?>"><?php echo $quran_percentage; ?></span>%)
             </h3>
             <button type="button" class="btn btn-outline btn-sm select-all-btn" onclick="selectAll(<?php echo $quran; ?>)">
-                <i class="fas fa-check-double"></i> Select Remaining
+                <i class="fas fa-check-double"></i> <span class="select-all-label">Select Remaining</span>
             </button>
         </div>
         <div class="progress-container" style="padding: 0 20px;">
@@ -163,7 +213,7 @@ require_once '../includes/header.php';
 
     <div class="card">
         <p class="text-center" style="padding: 20px; color: var(--text-secondary);">
-            <i class="fas fa-info-circle"></i> Click on multiple Juz to select them, then click the floating "Save Progress" button.
+            <i class="fas fa-info-circle"></i> Use the mode buttons above, select the affected Juz, then apply the change with the floating action button.
         </p>
     </div>
 </div>
@@ -171,20 +221,52 @@ require_once '../includes/header.php';
 <!-- Floating Action Button -->
 <div class="floating-actions" id="floating-actions">
     <button type="button" class="btn btn-warning btn-lg" onclick="uploadProgress()">
-        <i class="fas fa-cloud-upload-alt"></i> Save Progress (<span id="selection-count">0</span>)
+        <i class="fas fa-cloud-upload-alt"></i> <span id="action-label">Save Progress</span> (<span id="selection-count">0</span>)
     </button>
 </div>
 
 <script>
     let selectedJuz = [];
+    let trackingMode = 'complete';
+
+    function setTrackingMode(mode) {
+        if (trackingMode === mode) return;
+
+        clearSelectedItems();
+        trackingMode = mode;
+        syncModeUI();
+        updateFloatingButton();
+    }
+
+    function syncModeUI() {
+        document.getElementById('mode-complete').classList.toggle('active', trackingMode === 'complete');
+        document.getElementById('mode-delete').classList.toggle('active', trackingMode === 'delete');
+
+        document.querySelectorAll('.select-all-label').forEach(label => {
+            label.innerText = trackingMode === 'complete' ? 'Select Remaining' : 'Select Completed';
+        });
+
+        document.querySelectorAll('.juz-item.selected').forEach(item => {
+            item.classList.toggle('delete-mode', trackingMode === 'delete');
+        });
+
+        document.getElementById('action-label').innerText = trackingMode === 'complete' ? 'Save Progress' : 'Delete Progress';
+    }
+
+    function clearSelectedItems() {
+        document.querySelectorAll('.juz-item.selected').forEach(item => item.classList.remove('selected', 'delete-mode'));
+        selectedJuz = [];
+    }
 
     function toggleSelection(element) {
-        if (element.classList.contains('completed')) return;
+        const isCompleted = element.classList.contains('completed');
+        if ((trackingMode === 'complete' && isCompleted) || (trackingMode === 'delete' && !isCompleted)) return;
 
         const quran = element.getAttribute('data-quran');
         const juz = element.getAttribute('data-juz');
         
         element.classList.toggle('selected');
+        element.classList.toggle('delete-mode', trackingMode === 'delete' && element.classList.contains('selected'));
         
         if (element.classList.contains('selected')) {
             selectedJuz.push({quran_number: quran, juz_number: juz});
@@ -197,10 +279,14 @@ require_once '../includes/header.php';
 
     function selectAll(quranNumber) {
         const grid = document.querySelector(`#quran-card-${quranNumber} .juz-grid`);
-        const items = grid.querySelectorAll('.juz-item:not(.completed):not(.selected)');
+        const selector = trackingMode === 'complete'
+            ? '.juz-item:not(.completed):not(.selected)'
+            : '.juz-item.completed:not(.selected)';
+        const items = grid.querySelectorAll(selector);
         
         items.forEach(item => {
             item.classList.add('selected');
+            item.classList.toggle('delete-mode', trackingMode === 'delete');
             selectedJuz.push({
                 quran_number: item.getAttribute('data-quran'), 
                 juz_number: item.getAttribute('data-juz')
@@ -217,6 +303,7 @@ require_once '../includes/header.php';
         if (selectedJuz.length > 0) {
             btn.style.display = 'block';
             countSpan.innerText = selectedJuz.length;
+            document.getElementById('action-label').innerText = trackingMode === 'complete' ? 'Save Progress' : 'Delete Progress';
         } else {
             btn.style.display = 'none';
         }
@@ -224,11 +311,20 @@ require_once '../includes/header.php';
 
     async function uploadProgress() {
         if (selectedJuz.length === 0) return;
+
+        if (trackingMode === 'delete') {
+            const confirmed = window.confirm(`Delete ${selectedJuz.length} completed log(s)? This will restore the selected juz to incomplete.`);
+            if (!confirmed) {
+                return;
+            }
+        }
         
         const btn = document.querySelector('#floating-actions button');
         const originalContent = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.innerHTML = trackingMode === 'complete'
+            ? '<i class="fas fa-spinner fa-spin"></i> Saving...'
+            : '<i class="fas fa-spinner fa-spin"></i> Deleting...';
 
         try {
             const response = await fetch('ajax_quran_tracking.php', {
@@ -236,18 +332,24 @@ require_once '../includes/header.php';
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ selections: selectedJuz })
+                body: JSON.stringify({ action: trackingMode, selections: selectedJuz })
             });
 
             const result = await response.json();
 
             if (result.success) {
-                // Update UI for completed items
+                // Update UI for the affected items
                 selectedJuz.forEach(item => {
                     const el = document.querySelector(`.juz-item[data-quran="${item.quran_number}"][data-juz="${item.juz_number}"]`);
-                    el.classList.remove('selected');
-                    el.classList.add('completed');
-                    el.innerHTML = `Juz ${item.juz_number}<br><i class="fas fa-check-circle"></i>`;
+                    el.classList.remove('selected', 'delete-mode');
+
+                    if (trackingMode === 'complete') {
+                        el.classList.add('completed');
+                        el.innerHTML = `Juz ${item.juz_number}<br><i class="fas fa-check-circle"></i>`;
+                    } else {
+                        el.classList.remove('completed');
+                        el.innerHTML = `Juz ${item.juz_number}`;
+                    }
                 });
 
                 // Update Progress Bars
@@ -257,7 +359,8 @@ require_once '../includes/header.php';
                 showAlert('success', result.message);
                 
                 // Clear selection
-                selectedJuz = [];
+                clearSelectedItems();
+                syncModeUI();
                 updateFloatingButton();
             } else {
                 showAlert('error', result.message || 'An error occurred.');
@@ -299,6 +402,8 @@ require_once '../includes/header.php';
             alertDiv.style.display = 'none';
         }, 5000);
     }
+
+    syncModeUI();
 </script>
 
-<?php require_once '../includes/header.php'; ?>
+<?php require_once '../includes/footer.php'; ?>

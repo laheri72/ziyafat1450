@@ -1,19 +1,51 @@
 <?php
+ob_start();
+
+function send_json_response($payload, $status_code = 200) {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    http_response_code($status_code);
+    header('Content-Type: application/json');
+    echo json_encode($payload);
+    exit();
+}
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    $fatal_types = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+
+    if ($error && in_array($error['type'], $fatal_types, true)) {
+        send_json_response([
+            'success' => false,
+            'message' => 'Server error: ' . $error['message']
+        ], 500);
+    }
+});
+
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
-// Set JSON header
-header('Content-Type: application/json');
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 // Check if user is logged in
 init_session();
 if (!is_logged_in()) {
-    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
-    exit();
+    send_json_response(['success' => false, 'message' => 'Not authenticated'], 401);
 }
 
-// Get input first to check for target_user_id
-$data = json_decode(file_get_contents('php://input'), true);
+// Only accept POST requests
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    send_json_response(['success' => false, 'message' => 'Invalid request method'], 405);
+}
+
+$raw_input = file_get_contents('php://input');
+$data = json_decode($raw_input, true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    send_json_response(['success' => false, 'message' => 'Invalid JSON input'], 400);
+}
 
 $user_id = $_SESSION['user_id'];
 // Allow amali admins to submit on behalf of users
@@ -21,33 +53,24 @@ if (isset($data['target_user_id']) && has_amali_access()) {
     $user_id = intval($data['target_user_id']);
 }
 
-// Only accept POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit();
-}
-
-// Get input
-$data = json_decode(file_get_contents('php://input'), true);
-
 if (!$data || !isset($data['selections']) || !is_array($data['selections'])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid input data']);
-    exit();
+    send_json_response(['success' => false, 'message' => 'Invalid input data'], 400);
 }
 
 $action = isset($data['action']) ? strtolower(trim($data['action'])) : 'complete';
 if (!in_array($action, ['complete', 'delete'], true)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid action requested']);
-    exit();
+    send_json_response(['success' => false, 'message' => 'Invalid action requested'], 400);
 }
 
 $selections = $data['selections'];
 $success_count = 0;
 $errors = [];
+$transaction_started = false;
 
 try {
     // Start transaction
     $conn->begin_transaction();
+    $transaction_started = true;
     
     foreach ($selections as $selection) {
         $quran_number = intval($selection['quran_number']);
@@ -105,6 +128,7 @@ try {
     
     // Commit transaction
     $conn->commit();
+    $transaction_started = false;
     
     // Get updated progress for response
     $quran_progress = get_quran_progress($conn, $user_id);
@@ -119,7 +143,7 @@ try {
         $quran_counts[$q] = $q_stmt->get_result()->fetch_assoc()['count'];
     }
     
-    echo json_encode([
+    send_json_response([
         'success' => true,
         'message' => $action === 'complete'
             ? ($success_count > 0 ? "$success_count Juz marked as completed!" : "No new progress to update.")
@@ -130,9 +154,12 @@ try {
         'errors' => $errors
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     // Rollback on error
-    $conn->rollback();
-    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    if ($transaction_started) {
+        $conn->rollback();
+    }
+
+    send_json_response(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
 }
 ?>

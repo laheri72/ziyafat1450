@@ -335,7 +335,19 @@ require_once '../includes/header.php';
                 body: JSON.stringify({ action: trackingMode, selections: selectedJuz })
             });
 
-            const result = await response.json();
+            const responseText = await response.text();
+            let result;
+
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                const preview = responseText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                throw new Error(preview || 'Server returned an invalid response.');
+            }
+
+            if (!response.ok) {
+                throw new Error(result.message || `Server request failed (${response.status}).`);
+            }
 
             if (result.success) {
                 // Update UI for the affected items
@@ -367,7 +379,7 @@ require_once '../includes/header.php';
             }
         } catch (error) {
             console.error('Error:', error);
-            showAlert('error', 'Failed to connect to the server.');
+            showAlert('error', error.message || 'Failed to connect to the server.');
         } finally {
             btn.disabled = false;
             btn.innerHTML = originalContent;

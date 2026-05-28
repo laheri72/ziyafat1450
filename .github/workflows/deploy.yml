@@ -22,11 +22,12 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ./htdocs/
-          dangerous-delete-include: |
-            **/*.php
-            **/*.js
-            **/*.css
-            **/
-          dangerous-delete-exclude: |
+          exclude: |
+            .git*
             .env
             node_modules/
+            .github/
+            database/127_0_0_1.sql
+            database/ziyafat1450_schema.sql
+            railway.toml
+

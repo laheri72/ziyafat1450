@@ -432,9 +432,6 @@ require_once '../includes/header.php';
                 <a href="amali_reports.php" class="btn btn-primary">
                     <i class="fas fa-chart-bar"></i> View Amali Reports
                 </a>
-                <a href="https://ziyarat1449.web.app/" target="_blank" class="btn btn-info" style="background-color: #0ea5e9; color: white;">
-                    <i class="fas fa-mosque"></i> Ziyarat Portal
-                </a>
                 <?php if (can_manage_amali_masters()): ?>
                 <a href="manage_duas.php" class="btn btn-success">
                     <i class="fas fa-hands-praying"></i> Manage Duas

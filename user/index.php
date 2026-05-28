@@ -72,10 +72,6 @@ require_once '../includes/header.php';
                     <i class="fas fa-book" style="font-size: 1.5rem;"></i>
                     <span>Istinsakh Kutub</span>
                 </a>
-                <a href="https://ziyarat1449.web.app/" target="_blank" class="btn" style="background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; flex-direction: column; padding: 1.5rem 1rem; gap: 10px; box-shadow: var(--shadow-md); border: none; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-lg)';" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-md)';">
-                    <i class="fas fa-mosque" style="font-size: 1.5rem;"></i>
-                    <span>Ziyarat Portal</span>
-                </a>
             </div>
         </div>
     </div>

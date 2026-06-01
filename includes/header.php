@@ -58,8 +58,6 @@ init_session();
                                 </a>
                             </div>
 
-                            <!-- Broadcast Center Disabled -->
-
                             <!-- User Portal Access for Admin -->
                             <div class="nav-item">
                                 <a href="../user/index.php" class="nav-link <?php echo strpos($_SERVER['PHP_SELF'], 'user/index.php') !== false ? 'active' : ''; ?>">

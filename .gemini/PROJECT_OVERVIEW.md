@@ -14,12 +14,7 @@ A spiritual and financial progress tracking platform for the Dawoodi Bohra commu
 - **Waterfall Distribution:** Sequential payment filling (Tasea 66k -> Ashera 97k -> Hadi 127k).
 - **Real-time Updates:** AJAX-based contribution entry.
 
-### 3. Super Admin Broadcast Center
-- **Mailing System:** Manual batch control (Limit 100/day) for professional reminders.
-- **Personalized Content:** Automatically includes individual progress and Jamea-specific insights in every email.
-- **Tracking:** Detailed activity log for sent/failed status.
-
-### 4. Admin Utilities
+### 3. Admin Utilities
 - **User Management:** Full CRUD with secure ITS/TR number tracking.
 - **Password Reset:** Super Admin ability to reset any user to their TR number.
 - **Reporting:** Cross-category spiritual and financial summaries.
@@ -27,10 +22,7 @@ A spiritual and financial progress tracking platform for the Dawoodi Bohra commu
 ## System Diagram
 ```mermaid
 graph TD
-    Admin[Super Admin] --> BC[Broadcast Center]
-    Admin --> UM[User Management]
-    BC --> SMTP[Hostinger SMTP]
-    SMTP --> UserEmail[User Inbox]
+    Admin[Super Admin] --> UM[User Management]
     
     User[User] --> Dash[Mobile Dashboard]
     Dash --> Quran[Quran AJAX]

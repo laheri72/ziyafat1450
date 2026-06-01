@@ -18,22 +18,22 @@
 - Verify financial calculations when adding new contributions (Waterfall logic check).
 - Check for SQL injection risks (ensure `bind_param` is used for all user inputs).
 
-## Deployment Flow (GitHub -> Hostinger)
+## Deployment Flow (GitHub -> InfinityFree)
 
 ### Current Setup (Inferred)
 1. **Development:** Changes made locally and pushed to GitHub.
-2. **Transfer:** Files are likely uploaded to Hostinger via FTP/SFTP or a "Git Deploy" feature in the Hostinger panel.
-3. **Database:** Migrations are manually applied via phpMyAdmin on Hostinger.
+2. **Transfer:** Files are uploaded to InfinityFree via FTP.
+3. **Database:** Migrations are manually applied via phpMyAdmin on InfinityFree.
 
 ### Suggested CI/CD Flow
 1. **GitHub Actions:** Set up a workflow to:
    - Run PHP linting.
    - (Optional) Run tests if implemented.
-   - Automatically deploy to Hostinger via SSH/SFTP on merge to `main` branch.
-2. **Secrets:** Store database credentials and SSH keys in GitHub Repository Secrets.
+   - Automatically deploy to InfinityFree via FTP on merge to `main` branch.
+2. **Secrets:** Store database credentials in GitHub Repository Secrets.
 
 ## Deployment Checklist
 - [ ] Update `config/database.php` with production credentials.
 - [ ] Clear PHP opcache if necessary.
-- [ ] Verify file permissions on Hostinger (usually 755 for dirs, 644 for files).
+- [ ] Verify file permissions on InfinityFree (usually 755 for dirs, 644 for files).
 - [ ] Ensure `.git` folder is not web-accessible.

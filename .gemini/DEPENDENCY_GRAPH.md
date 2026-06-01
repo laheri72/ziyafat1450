@@ -2,7 +2,6 @@
 
 ## Server-Side
 - **mysqli:** Core database extension.
-- **PHPMailer:** Located in `includes/PHPMailer/`. Handles SMTP communication.
 - **datetime:** Used for fiscal year and payment period calculations.
 
 ## Client-Side
@@ -13,5 +12,4 @@
 
 ## Internal Flow
 - `includes/functions.php` -> Essential for every page (Auth & Progress).
-- `includes/mailer_helper.php` -> Required by `ajax_broadcast.php` and debug scripts.
 - `assets/js/script.js` -> Centralized sidebar and UI initialization.

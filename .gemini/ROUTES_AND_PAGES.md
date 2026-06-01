@@ -19,8 +19,7 @@
 - `ajax_book_transcription.php`: API endpoint for book progress.
 
 ## Admin Routes (`/admin`)
-- `index.php`: Admin dashboard with Broadcast Center quick link.
-- `broadcast_center.php`: Campaign management and batch mailing system (Super Admin only).
+- `index.php`: Admin dashboard.
 - `view_users.php`: Mobile-responsive user list with search.
 - `user_details.php`: Detailed view of a specific user's progress.
 - `add_user.php`: Form to create new users.
@@ -30,11 +29,8 @@
 - `add_contribution.php`: Record new financial payments via AJAX.
 - `manage_books.php`: CRUD for `books_master`.
 - `manage_duas.php`: CRUD for `duas_master`.
-- `ajax_broadcast.php`: API endpoint for batch email dispatch.
 - `ajax_add_contribution.php`: API endpoint for financial records.
 
 ## Internal / Partial Paths
 - `includes/header.php`: Common nav, responsive sidebar toggle, and Toast system.
 - `includes/footer.php`: Closing tags and script inclusions.
-- `includes/mailer_helper.php`: Core logic for PHPMailer and HTML templates.
-- `config/mail.php`: SMTP server settings.

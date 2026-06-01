@@ -15,10 +15,5 @@
   - Session management and role-based authorization.
   - Data distribution logic (Waterfall Finance).
   - Centralized Amali progress calculations.
-- **`includes/mailer_helper.php`:**
-  - **`send_email($to, $subject, $body)`:** PHPMailer SMTP wrapper.
-  - **`get_email_template($title, $content, $userName)`:** Responsive HTML email wrapper.
-
 ## Automation & Batching
-- **Broadcast Engine:** Handles batching logic (Limit 100/day) and prevents SMTP throttling with delays.
 - **AJAX Handlers:** Decoupled frontend/backend logic for Quran, Book, and Finance entry.

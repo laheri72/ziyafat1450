@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once '../includes/header.php';
 ?>
 
-<div class="container">
+<div class="container container-form">
     <h1 class="mb-3"><i class="fas fa-user-plus"></i> Add New User</h1>
 
     <?php if ($error): ?>

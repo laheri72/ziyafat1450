@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once '../includes/header.php';
 ?>
 
-<div class="container">
+<div class="container container-form">
     <div class="page-header">
         <h1><i class="fas fa-user"></i> My Profile</h1>
         <p>Manage your account information and settings</p>

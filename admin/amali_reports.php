@@ -125,7 +125,7 @@ require_once '../includes/header.php';
     }
 </style>
 
-<div class="container">
+<div class="container container-data">
     <h1 class="mb-3" style="font-size: 1.5rem;"><i class="fas fa-chart-bar"></i> Amali Janib Reports 
         <?php if ($filter_category): ?>
             <span class="badge badge-primary" style="font-size: 0.9rem; vertical-align: middle; background-color: #6366f1;">

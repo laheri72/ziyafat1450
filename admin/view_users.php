@@ -52,7 +52,7 @@ if ($filter_category) {
 require_once '../includes/header.php';
 ?>
 
-<div class="container">
+<div class="container container-data">
     <h1 class="mb-3"><i class="fas fa-users"></i> View Users</h1>
 
     <!-- Filter Card -->

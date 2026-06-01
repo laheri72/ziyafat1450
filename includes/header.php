@@ -116,6 +116,12 @@ init_session();
                                         <span>Amali Reports</span>
                                     </a>
                                 </div>
+                                <div class="nav-item">
+                                    <a href="../user/ziyarat_portal.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'ziyarat_portal.php' ? 'active' : ''; ?>">
+                                        <i class="fas fa-kaaba"></i>
+                                        <span>Ziyarat Portal</span>
+                                    </a>
+                                </div>
                             </div>
                         <?php endif; ?>
                     <?php else: ?>
@@ -154,6 +160,12 @@ init_session();
                                 <a href="../user/book_transcription.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'book_transcription.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-book-open"></i>
                                     <span>Istinsakh Ul Kutub</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="../user/ziyarat_portal.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'ziyarat_portal.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-kaaba"></i>
+                                    <span>Ziyarat Portal</span>
                                 </a>
                             </div>
                         </div>

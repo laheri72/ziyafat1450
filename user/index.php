@@ -33,6 +33,9 @@ while ($row = $cat_result->fetch_assoc()) {
     $category_totals[$row['category']] = $row['total_count'];
 }
 
+// Get Ziyarat total
+$ziyarat_total = get_ziyarat_total($conn, $user_id);
+
 // Get Book progress
 $book_progress = get_book_progress($conn, $user_id);
 
@@ -71,6 +74,10 @@ require_once '../includes/header.php';
                 <a href="book_transcription.php" class="btn btn-warning" style="flex-direction: column; padding: 1.5rem 1rem; gap: 10px;">
                     <i class="fas fa-book" style="font-size: 1.5rem;"></i>
                     <span>Istinsakh Kutub</span>
+                </a>
+                <a href="ziyarat_portal.php" class="btn btn-primary" style="flex-direction: column; padding: 1.5rem 1rem; gap: 10px;">
+                    <i class="fas fa-kaaba" style="font-size: 1.5rem;"></i>
+                    <span>Ziyarat</span>
                 </a>
             </div>
         </div>
@@ -132,6 +139,17 @@ require_once '../includes/header.php';
             </div>
             <div class="stat-value"><?php echo $summary['books_completed'] ?? 0; ?></div>
             <div class="stat-label">Istinsakh Completed</div>
+        </div>
+
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <h4>Ziyarat</h4>
+                <div class="stat-icon">
+                    <i class="fas fa-kaaba"></i>
+                </div>
+            </div>
+            <div class="stat-value"><?php echo $ziyarat_total; ?></div>
+            <div class="stat-label">Total Count</div>
         </div>
 
         <div class="stat-card purple">

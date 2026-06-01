@@ -222,6 +222,70 @@ function get_dua_entries($conn, $user_id, $dua_id = null) {
     return $stmt->get_result();
 }
 
+// Get active Mazars for Ziyarat entry forms
+function get_active_mazars($conn) {
+    $sql = "SELECT * FROM mazars_master WHERE is_active = 1 ORDER BY display_order, mazar_name";
+    return $conn->query($sql);
+}
+
+// Get all Mazars for admin/report filters
+function get_all_mazars($conn) {
+    $sql = "SELECT * FROM mazars_master ORDER BY display_order, mazar_name";
+    return $conn->query($sql);
+}
+
+// Get total Ziyarat count for a user
+function get_ziyarat_total($conn, $user_id) {
+    $sql = "SELECT COALESCE(SUM(count_added), 0) as total_count
+            FROM ziyarat_entries
+            WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    return $row ? (int)$row['total_count'] : 0;
+}
+
+// Get user Ziyarat totals grouped by Mazar
+function get_ziyarat_breakdown($conn, $user_id) {
+    $sql = "SELECT
+                mm.id,
+                mm.mazar_name,
+                mm.is_active,
+                COALESCE(SUM(ze.count_added), 0) as total_count,
+                MAX(ze.entry_date) as last_entry_date
+            FROM mazars_master mm
+            LEFT JOIN ziyarat_entries ze ON mm.id = ze.mazar_id AND ze.user_id = ?
+            GROUP BY mm.id, mm.mazar_name, mm.is_active
+            HAVING total_count > 0 OR mm.is_active = 1
+            ORDER BY mm.display_order, mm.mazar_name";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Get recent Ziyarat entries for a user
+function get_recent_ziyarat_entries($conn, $user_id, $limit = 20) {
+    $limit = max(1, min((int)$limit, 100));
+    $sql = "SELECT
+                ze.id,
+                ze.mazar_id,
+                ze.count_added,
+                ze.entry_date,
+                ze.created_at,
+                mm.mazar_name
+            FROM ziyarat_entries ze
+            JOIN mazars_master mm ON ze.mazar_id = mm.id
+            WHERE ze.user_id = ?
+            ORDER BY ze.created_at DESC, ze.id DESC
+            LIMIT ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $user_id, $limit);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
 // Get Book transcription progress for a user (only selected/completed books)
 function get_book_progress($conn, $user_id) {
     $sql = "SELECT 
@@ -297,6 +361,15 @@ function get_amali_summary($conn, $user_id) {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $dua_data = $stmt->get_result()->fetch_assoc();
+
+    // Get Ziyarat count
+    $sql_ziyarat = "SELECT COALESCE(SUM(count_added), 0) as total_ziyarat_count
+                    FROM ziyarat_entries
+                    WHERE user_id = ?";
+    $stmt = $conn->prepare($sql_ziyarat);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $ziyarat_data = $stmt->get_result()->fetch_assoc();
     
     // Get Book progress
     $sql_books = "SELECT 
@@ -310,7 +383,7 @@ function get_amali_summary($conn, $user_id) {
     $book_data = $stmt->get_result()->fetch_assoc();
     
     // Combine all data
-    return array_merge($quran_data, $dua_data, $book_data);
+    return array_merge($quran_data, $dua_data, $ziyarat_data, $book_data);
 }
 
 ?>

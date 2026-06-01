@@ -20,6 +20,7 @@ $search_name = isset($_GET['search_name']) ? clean_input($_GET['search_name']) :
 $filter_status = isset($_GET['filter_status']) ? clean_input($_GET['filter_status']) : '';
 $filter_dua = isset($_GET['filter_dua']) ? intval($_GET['filter_dua']) : 0;
 $filter_book = isset($_GET['filter_book']) ? intval($_GET['filter_book']) : 0;
+$filter_mazar = isset($_GET['filter_mazar']) ? intval($_GET['filter_mazar']) : 0;
 $filter_category = isset($_GET['filter_category']) ? clean_input($_GET['filter_category']) : '';
 $filter_classification = isset($_GET['filter_classification']) ? clean_input($_GET['filter_classification']) : '';
 $sort_by = isset($_GET['sort_by']) ? clean_input($_GET['sort_by']) : '';
@@ -153,6 +154,9 @@ require_once '../includes/header.php';
             <a href="?report_type=books" class="btn <?php echo $report_type === 'books' ? 'btn-primary' : 'btn-secondary'; ?>" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
                 <i class="fas fa-book"></i> Kutub
             </a>
+            <a href="?report_type=ziyarat" class="btn <?php echo $report_type === 'ziyarat' ? 'btn-primary' : 'btn-secondary'; ?>" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                <i class="fas fa-kaaba"></i> Ziyarat
+            </a>
             <?php if (is_super_admin()): ?>
             <a href="bulk_amali_entry.php" class="btn btn-dark" style="padding: 0.5rem 1rem; font-size: 0.85rem; background-color: #1e293b; color: white;">
                 <i class="fas fa-layer-group"></i> Bulk Collective Entry
@@ -260,6 +264,12 @@ require_once '../includes/header.php';
                 $category_stats[$row['category']] += $row['total_count'];
             }
         }
+
+        $sql_ziyarat_total = "SELECT COALESCE(SUM(ze.count_added), 0) as total_count
+                              FROM ziyarat_entries ze
+                              LEFT JOIN users u ON ze.user_id = u.id
+                              WHERE $where_clause";
+        $ziyarat_stats = $conn->query($sql_ziyarat_total)->fetch_assoc();
         ?>
 
         <div class="stats-grid" style="gap: 0.75rem; margin-bottom: 1rem;">
@@ -292,11 +302,18 @@ require_once '../includes/header.php';
                 <div class="stat-value" style="font-size: 1.75rem;"><?php echo $category_stats['namaz']; ?></div>
                 <div class="stat-label" style="font-size: 0.75rem;">Count</div>
             </div>
-<div class="stat-card danger" style="padding: 0.75rem;">
-    <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem;"><i class="fas fa-book"></i> Kutub</h4>
-    <div class="stat-value" style="font-size: 1.75rem;"><?php echo $overall_stats['total_books_completed']; ?></div>
-    <div class="stat-label" style="font-size: 0.75rem;">Done</div>
-</div>
+
+            <div class="stat-card info" style="padding: 0.75rem;">
+                <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem;"><i class="fas fa-kaaba"></i> Ziyarat</h4>
+                <div class="stat-value" style="font-size: 1.75rem;"><?php echo $ziyarat_stats['total_count']; ?></div>
+                <div class="stat-label" style="font-size: 0.75rem;">Count</div>
+            </div>
+
+            <div class="stat-card danger" style="padding: 0.75rem;">
+                <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem;"><i class="fas fa-book"></i> Kutub</h4>
+                <div class="stat-value" style="font-size: 1.75rem;"><?php echo $overall_stats['total_books_completed']; ?></div>
+                <div class="stat-label" style="font-size: 0.75rem;">Done</div>
+            </div>
 </div>
 
         <div class="card" id="bulkAssignCard" style="border-left: 5px solid var(--accent-purple); position: sticky; top: 10px; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
@@ -462,6 +479,20 @@ require_once '../includes/header.php';
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: <?php echo $namaz_progress; ?>%; background: linear-gradient(90deg, #8b5cf6, #7c3aed);"></div>
+                </div>
+            </div>
+
+            <!-- Ziyarat Progress -->
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span class="progress-label-text">
+                        <i class="fas fa-kaaba"></i> Ziyarat:
+                        <?php echo number_format($ziyarat_stats['total_count']); ?> Total
+                    </span>
+                    <span class="progress-label-value">Count</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: <?php echo $ziyarat_stats['total_count'] > 0 ? 100 : 0; ?>%; background: linear-gradient(90deg, #0ea5e9, #0284c7);"></div>
                 </div>
             </div>
         </div>
@@ -1037,6 +1068,182 @@ require_once '../includes/header.php';
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+
+    <?php elseif ($report_type === 'ziyarat'): ?>
+        <!-- Ziyarat Report -->
+        <?php
+        $mazars_list = get_all_mazars($conn);
+
+        $sql = "SELECT
+                    u.id as user_id,
+                    u.name,
+                    u.its_number,
+                    u.category,
+                    u.classification,
+                    mm.id as mazar_id,
+                    mm.mazar_name,
+                    COALESCE(SUM(ze.count_added), 0) as total_count,
+                    MAX(ze.entry_date) as last_entry_date
+                FROM ziyarat_entries ze
+                JOIN users u ON ze.user_id = u.id
+                JOIN mazars_master mm ON ze.mazar_id = mm.id
+                WHERE (u.role = 'user' OR u.role = 'admin') AND u.its_number NOT LIKE '000000%'";
+
+        $params = []; $types = '';
+        if ($filter_category) { $sql .= " AND u.category = ?"; $params[] = $filter_category; $types .= 's'; }
+        if ($filter_classification) { $sql .= " AND u.classification = ?"; $params[] = $filter_classification; $types .= 's'; }
+        if ($search_name) { $sql .= " AND (u.name LIKE ? OR u.its_number LIKE ?)"; $search_param = "%$search_name%"; $params[] = $search_param; $params[] = $search_param; $types .= 'ss'; }
+        if ($filter_mazar) { $sql .= " AND ze.mazar_id = ?"; $params[] = $filter_mazar; $types .= 'i'; }
+
+        $sql .= " GROUP BY u.id, u.name, u.its_number, u.category, u.classification, mm.id, mm.mazar_name
+                  ORDER BY u.name, mm.display_order, mm.mazar_name";
+
+        $stmt = $conn->prepare($sql);
+        if (!empty($params)) { $stmt->bind_param($types, ...$params); }
+        $stmt->execute();
+        $ziyarat_result = $stmt->get_result();
+        $ziyarat_rows = [];
+        while ($row = $ziyarat_result->fetch_assoc()) { $ziyarat_rows[] = $row; }
+        ?>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-filter"></i> Filter Ziyarat Report</h3>
+            </div>
+            <form method="GET" action="" style="padding: var(--spacing-lg);">
+                <input type="hidden" name="report_type" value="ziyarat">
+                <div class="form-group">
+                    <label><i class="fas fa-search"></i> Search by Name/ITS</label>
+                    <input type="text" name="search_name" class="form-control" placeholder="Search..." value="<?php echo htmlspecialchars($search_name); ?>">
+                </div>
+                <?php if (!$is_category_coordinator): ?>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Filter by Jamea</label>
+                        <select name="filter_category" class="form-control">
+                            <option value="">All Jamea</option>
+                            <option value="Surat" <?php echo $filter_category === 'Surat' ? 'selected' : ''; ?>>Surat</option>
+                            <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
+                            <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
+                            <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
+                            <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
+                        </select>
+                    </div>
+                <?php else: ?>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Jamea (Fixed)</label>
+                        <div class="alert alert-info" style="padding: 0.5rem 0.75rem; margin-bottom: 0;">
+                            <i class="fas fa-info-circle"></i> <strong><?php echo htmlspecialchars($assigned_category); ?></strong>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                    <label><i class="fas fa-tags"></i> Filter by Classification</label>
+                    <select name="filter_classification" class="form-control">
+                        <option value="">-- All Classifications --</option>
+                        <option value="Talabat" <?php echo ($filter_classification == 'Talabat') ? 'selected' : ''; ?>>Talabat</option>
+                        <option value="Taalebaat" <?php echo ($filter_classification == 'Taalebaat') ? 'selected' : ''; ?>>Taalebaat</option>
+                        <option value="Muntasebeen" <?php echo ($filter_classification == 'Muntasebeen') ? 'selected' : ''; ?>>Muntasebeen</option>
+                        <option value="Muntasebaat" <?php echo ($filter_classification == 'Muntasebaat') ? 'selected' : ''; ?>>Muntasebaat</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-location-dot"></i> Filter by Mazar</label>
+                    <select name="filter_mazar" class="form-control">
+                        <option value="">All Mazars</option>
+                        <?php while ($mazar = $mazars_list->fetch_assoc()): ?>
+                            <option value="<?php echo $mazar['id']; ?>" <?php echo $filter_mazar == $mazar['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($mazar['mazar_name']); ?><?php echo !$mazar['is_active'] ? ' (Inactive)' : ''; ?>
+                            </option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                    <a href="?report_type=ziyarat" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-kaaba"></i> Ziyarat Report</h3>
+            </div>
+            <div class="report-wrapper">
+                <div class="table-container">
+                    <?php if (!empty($ziyarat_rows)): ?>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ITS Number</th>
+                                    <th>Name</th>
+                                    <th>Jamea</th>
+                                    <th>Classification</th>
+                                    <th>Mazar</th>
+                                    <th>Total Count</th>
+                                    <th>Last Entry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($ziyarat_rows as $row): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($row['its_number']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['category'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['classification'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($row['mazar_name']); ?></td>
+                                        <td><strong><?php echo $row['total_count']; ?></strong></td>
+                                        <td><?php echo $row['last_entry_date'] ? date('M d, Y', strtotime($row['last_entry_date'])) : '-'; ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="text-center" style="padding: 2rem;">No Ziyarat data found.</p>
+                    <?php endif; ?>
+                </div>
+
+                <div class="mobile-report-cards" style="padding: 1rem;">
+                    <?php foreach ($ziyarat_rows as $row): ?>
+                        <div class="report-card">
+                            <div class="report-card-header">
+                                <div>
+                                    <div class="report-card-title"><?php echo htmlspecialchars($row['name']); ?></div>
+                                    <div class="report-card-subtitle">ITS: <?php echo htmlspecialchars($row['its_number']); ?> | <?php echo htmlspecialchars($row['category'] ?: 'N/A'); ?></div>
+                                </div>
+                            </div>
+                            <div class="report-card-grid">
+                                <div class="report-data-item report-card-full">
+                                    <span class="report-data-label">Mazar</span>
+                                    <span class="report-data-value"><?php echo htmlspecialchars($row['mazar_name']); ?></span>
+                                </div>
+                                <div class="report-data-item">
+                                    <span class="report-data-label">Total Count</span>
+                                    <span class="report-data-value"><?php echo $row['total_count']; ?></span>
+                                </div>
+                                <div class="report-data-item">
+                                    <span class="report-data-label">Last Entry</span>
+                                    <span class="report-data-value"><?php echo $row['last_entry_date'] ? date('M d, Y', strtotime($row['last_entry_date'])) : '-'; ?></span>
+                                </div>
+                                <div class="report-data-item">
+                                    <span class="report-data-label">Class</span>
+                                    <span class="report-data-value"><?php echo htmlspecialchars($row['classification'] ?: 'N/A'); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <?php if (empty($ziyarat_rows)): ?>
+                        <p class="text-center" style="padding: 2rem;">No Ziyarat data found.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

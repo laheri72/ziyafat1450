@@ -294,6 +294,28 @@ require_once '../includes/header.php';
                 </button>
             </div>
 
+            <!-- Quick Ziyarat Entry -->
+            <?php
+            $mazars_list = get_active_mazars($conn);
+            ?>
+            <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe;">
+                <h4 style="margin-top: 0; color: #1e40af; font-size: 1rem;"><i class="fas fa-kaaba"></i> Add Ziyarat Count</h4>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <select id="quick_ziyarat_mazar_id" class="form-control" style="padding: 0.4rem; font-size: 0.85rem;">
+                        <option value="">Select Mazar...</option>
+                        <?php while($mazar = $mazars_list->fetch_assoc()): ?>
+                            <option value="<?php echo $mazar['id']; ?>"><?php echo htmlspecialchars($mazar['mazar_name']); ?></option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <input type="number" id="quick_ziyarat_count" class="form-control" placeholder="Count to add" min="1" style="padding: 0.4rem; font-size: 0.85rem;">
+                </div>
+                <button type="button" class="btn btn-primary btn-sm w-100" onclick="submitQuickZiyarat(<?php echo $user_id; ?>)">
+                    <i class="fas fa-plus"></i> Add Ziyarat
+                </button>
+            </div>
+
             <!-- Quick Book Entry -->
             <?php
             $books_list = $conn->query("SELECT bm.id, bm.book_name, bt.id as is_selected FROM books_master bm LEFT JOIN book_transcription bt ON bm.id = bt.book_id AND bt.user_id = $user_id WHERE bm.is_active = 1 ORDER BY bm.display_order");
@@ -584,6 +606,45 @@ async function submitQuickBook(userId, action) {
         showToast('Network error occurred.', 'error');
     }
     btn.disabled = false;
+}
+
+async function submitQuickZiyarat(userId) {
+    const mazarId = document.getElementById('quick_ziyarat_mazar_id').value;
+    const count = document.getElementById('quick_ziyarat_count').value;
+
+    if (!mazarId || !count) return showToast('Please select a Mazar and enter a count.', 'error');
+
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+    const formData = new FormData();
+    formData.append('target_user_id', userId);
+    formData.append('mazar_id', mazarId);
+    formData.append('count_to_add', count);
+
+    try {
+        const response = await fetch('../user/ajax_ziyarat_entry.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            showToast('Ziyarat entry added for user!', 'success');
+            document.getElementById('quick_ziyarat_count').value = '';
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Failed to add Ziyarat count', 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (e) {
+        showToast('Network error occurred.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
 }
 
 function toggleAdminType() {

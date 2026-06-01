@@ -18,7 +18,7 @@ $error = '';
 $success = '';
 
 // Handle Add/Edit/Delete operations
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'];
     
     if ($action === 'add') {
@@ -80,12 +80,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = 'Failed to activate dua.';
         }
+    } elseif ($action === 'add_mazar') {
+        $mazar_name = clean_input($_POST['mazar_name']);
+        $display_order = intval($_POST['display_order']);
+
+        $sql = "INSERT INTO mazars_master (mazar_name, display_order) VALUES (?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("si", $mazar_name, $display_order);
+
+        if ($stmt->execute()) {
+            $success = 'Mazar added successfully!';
+        } else {
+            $error = 'Failed to add Mazar.';
+        }
+    } elseif ($action === 'edit_mazar') {
+        $id = intval($_POST['id']);
+        $mazar_name = clean_input($_POST['mazar_name']);
+        $display_order = intval($_POST['display_order']);
+
+        $sql = "UPDATE mazars_master SET mazar_name = ?, display_order = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sii", $mazar_name, $display_order, $id);
+
+        if ($stmt->execute()) {
+            $success = 'Mazar updated successfully!';
+        } else {
+            $error = 'Failed to update Mazar.';
+        }
+    } elseif ($action === 'deactivate_mazar') {
+        $id = intval($_POST['id']);
+
+        $sql = "UPDATE mazars_master SET is_active = 0 WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+
+        if ($stmt->execute()) {
+            $success = 'Mazar deactivated successfully!';
+        } else {
+            $error = 'Failed to deactivate Mazar.';
+        }
+    } elseif ($action === 'activate_mazar') {
+        $id = intval($_POST['id']);
+
+        $sql = "UPDATE mazars_master SET is_active = 1 WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+
+        if ($stmt->execute()) {
+            $success = 'Mazar activated successfully!';
+        } else {
+            $error = 'Failed to activate Mazar.';
+        }
     }
 }
 
 // Get all duas
 $sql = "SELECT * FROM duas_master ORDER BY display_order, id";
 $duas = $conn->query($sql);
+
+// Get all Mazars
+$mazars = get_all_mazars($conn);
 
 require_once '../includes/header.php';
 ?>
@@ -216,6 +270,91 @@ require_once '../includes/header.php';
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Add New Mazar Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-plus"></i> Add New Mazar</h3>
+        </div>
+        <form method="POST" action="">
+            <input type="hidden" name="action" value="add_mazar">
+
+            <div class="form-group">
+                <label for="mazar_name"><i class="fas fa-location-dot"></i> Mazar Name *</label>
+                <input type="text" id="mazar_name" name="mazar_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="mazar_display_order"><i class="fas fa-sort-numeric-down"></i> Display Order *</label>
+                <input type="number" id="mazar_display_order" name="display_order" class="form-control" min="0" value="0" required>
+                <small class="form-text text-muted">Lower numbers appear first</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Add Mazar
+            </button>
+        </form>
+    </div>
+
+    <!-- Mazars List -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-kaaba"></i> All Mazars</h3>
+        </div>
+        <div class="table-container">
+            <?php if ($mazars->num_rows > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Mazar Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($mazar = $mazars->fetch_assoc()): ?>
+                            <tr>
+                                <td><strong><?php echo $mazar['display_order']; ?></strong></td>
+                                <td><?php echo htmlspecialchars($mazar['mazar_name']); ?></td>
+                                <td>
+                                    <?php if ($mazar['is_active']): ?>
+                                        <span class="badge badge-success">Active</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-danger">Inactive</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <button onclick="editMazar(<?php echo htmlspecialchars(json_encode($mazar)); ?>)" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <?php if ($mazar['is_active']): ?>
+                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this Mazar? Existing entries will remain in reports.');">
+                                            <input type="hidden" name="action" value="deactivate_mazar">
+                                            <input type="hidden" name="id" value="<?php echo $mazar['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-ban"></i> Deactivate
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="action" value="activate_mazar">
+                                            <input type="hidden" name="id" value="<?php echo $mazar['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check"></i> Activate
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="text-center">No Mazars found.</p>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
 <!-- Edit Modal -->
@@ -274,6 +413,37 @@ require_once '../includes/header.php';
     </div>
 </div>
 
+<!-- Edit Mazar Modal -->
+<div id="editMazarModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+    <div style="background:white; margin:50px auto; padding:20px; max-width:600px; border-radius:8px;">
+        <h3><i class="fas fa-edit"></i> Edit Mazar</h3>
+        <form method="POST" action="">
+            <input type="hidden" name="action" value="edit_mazar">
+            <input type="hidden" name="id" id="edit_mazar_id">
+
+            <div class="form-group">
+                <label for="edit_mazar_name">Mazar Name *</label>
+                <input type="text" id="edit_mazar_name" name="mazar_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="edit_mazar_display_order">Display Order *</label>
+                <input type="number" id="edit_mazar_display_order" name="display_order" class="form-control" min="0" required>
+                <small class="form-text text-muted">Lower numbers appear first</small>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update
+                </button>
+                <button type="button" onclick="closeEditMazarModal()" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function editDua(dua) {
     document.getElementById('edit_id').value = dua.id;
@@ -288,6 +458,17 @@ function editDua(dua) {
 
 function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
+}
+
+function editMazar(mazar) {
+    document.getElementById('edit_mazar_id').value = mazar.id;
+    document.getElementById('edit_mazar_name').value = mazar.mazar_name;
+    document.getElementById('edit_mazar_display_order').value = mazar.display_order || 0;
+    document.getElementById('editMazarModal').style.display = 'block';
+}
+
+function closeEditMazarModal() {
+    document.getElementById('editMazarModal').style.display = 'none';
 }
 </script>
 

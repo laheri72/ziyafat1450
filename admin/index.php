@@ -114,6 +114,20 @@ if ($is_amali_admin) {
     } else {
         $books_stats = $conn->query($sql_books)->fetch_assoc();
     }
+
+    // Get Ziyarat stats
+    $sql_ziyarat = "SELECT COALESCE(SUM(ze.count_added), 0) as total_count
+                    FROM ziyarat_entries ze
+                    LEFT JOIN users u ON ze.user_id = u.id" . $where_sql_data;
+
+    if (!empty($params_data)) {
+        $stmt = $conn->prepare($sql_ziyarat);
+        $stmt->bind_param("s", $params_data[0]);
+        $stmt->execute();
+        $ziyarat_stats = $stmt->get_result()->fetch_assoc();
+    } else {
+        $ziyarat_stats = $conn->query($sql_ziyarat)->fetch_assoc();
+    }
     
     // Targets
     $target_qurans = $total_users * 4;
@@ -299,6 +313,17 @@ require_once '../includes/header.php';
                 </div>
                 <div class="stat-value"><?php echo $category_stats['namaz']; ?></div>
                 <div class="stat-label">Namaz Count</div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-card-header">
+                    <h4>Ziyarat</h4>
+                    <div class="stat-icon">
+                        <i class="fas fa-kaaba"></i>
+                    </div>
+                </div>
+                <div class="stat-value"><?php echo number_format($ziyarat_stats['total_count'] ?? 0); ?></div>
+                <div class="stat-label">Total Count</div>
             </div>
 
             <div class="stat-card danger">

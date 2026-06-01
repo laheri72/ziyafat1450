@@ -133,6 +133,12 @@ init_session();
                                 </a>
                             </div>
                             <div class="nav-item">
+                                <a href="../user/overview.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'overview.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>Overview</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
                                 <a href="../user/profile.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-user"></i>
                                     <span>My Profile</span>

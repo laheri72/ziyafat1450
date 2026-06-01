@@ -1,13 +1,22 @@
 <?php
 
-// Load environment variables
-// First try .env file (local development), then fall back to $_ENV (production/Railway)
+// Load environment variables.
+// .env.local is for machine-specific XAMPP/dev settings and is ignored by git.
+// .env keeps the existing hosted/prod workflow, then server env vars are the fallback.
 $env = [];
 
-// Try to load .env file if it exists
-$envFile = __DIR__ . '/../.env';
-if (file_exists($envFile)) {
-    $env = parse_ini_file($envFile);
+$envFiles = [
+    __DIR__ . '/../.env',
+    __DIR__ . '/../.env.local',
+];
+
+foreach ($envFiles as $envFile) {
+    if (file_exists($envFile)) {
+        $values = parse_ini_file($envFile);
+        if ($values !== false) {
+            $env = array_merge($env, $values);
+        }
+    }
 }
 
 // Use environment variables if .env values not set (production)
@@ -22,8 +31,16 @@ if (!$db_host || !$db_user || !$db_name) {
 }
 
 // Create connection
-$conn = @mysqli_connect($db_host, $db_user, $db_pass, $db_name);
+$connectError = null;
+
+try {
+    $conn = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
+} catch (mysqli_sql_exception $e) {
+    $conn = false;
+    $connectError = $e->getMessage();
+}
 
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error() . "\nHost: $db_host\nUser: $db_user\nDB: $db_name");
+    $error = $connectError ?: mysqli_connect_error();
+    die("Connection failed: " . $error . "\nHost: $db_host\nUser: $db_user\nDB: $db_name");
 }

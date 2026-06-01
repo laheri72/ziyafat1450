@@ -139,7 +139,7 @@ $page_title = 'Login';
 
         <!-- Footer -->
         <div class="auth-footer">
-            <p>© 1449 H · Ziyafat us Shukr</p>
+            <p>© 1450 H · Ziyafat us Shukr</p>
         
         </div>
 

@@ -65,6 +65,13 @@ AI should:
 3. Make the SQL safe for phpMyAdmin import.
 4. Tell the user to import that migration file in InfinityFree phpMyAdmin.
 
+Important workflow rule:
+
+- Any schema change, new table, column change, index change, enum change, or default change must be applied automatically to the local XAMPP database first.
+- The matching SQL must also be saved as a migration file in `database/migrations/` so it can be imported manually into InfinityFree phpMyAdmin.
+- Do not stop at the migration file alone when local dev can be updated safely.
+- Always call out the exact migration file path that the user must import in production.
+
 Recommended migration filename format:
 
 ```text
@@ -84,6 +91,11 @@ AI should:
 1. Apply the seed change locally.
 2. Create a SQL migration file with `INSERT`, `UPDATE`, or `INSERT ... ON DUPLICATE KEY UPDATE` where possible.
 3. Tell the user to import that migration in InfinityFree phpMyAdmin.
+
+Important workflow rule:
+
+- Seed/master data changes that are part of a feature should also be applied in local XAMPP automatically when safe.
+- The production-safe SQL must still be captured in a migration file for manual import to InfinityFree phpMyAdmin.
 
 ## If the feature changes user/live data
 

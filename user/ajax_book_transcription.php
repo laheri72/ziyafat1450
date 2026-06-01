@@ -26,27 +26,63 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $action = $_POST['action'] ?? '';
 
 try {
-    if ($action === 'select') {
+    if ($action === 'select' || $action === 'request_book') {
         $book_id = intval($_POST['book_id']);
+
+        if (user_has_active_book_assignment($conn, $user_id)) {
+            echo json_encode(['success' => false, 'message' => 'You already have an assigned book. Please complete or ask admin before requesting another.']);
+            exit();
+        }
+
+        $book_sql = "SELECT bm.id
+                     FROM books_master bm
+                     LEFT JOIN book_transcription bt
+                         ON bt.book_id = bm.id AND bt.status IN ('selected', 'completed')
+                     WHERE bm.id = ? AND bm.is_active = 1 AND bt.id IS NULL";
+        $book_stmt = $conn->prepare($book_sql);
+        $book_stmt->bind_param("i", $book_id);
+        $book_stmt->execute();
+
+        if ($book_stmt->get_result()->num_rows === 0) {
+            echo json_encode(['success' => false, 'message' => 'This book is already assigned or is not available for request.']);
+            exit();
+        }
+
+        $request_sql = "SELECT id, request_status FROM book_transcription_requests WHERE user_id = ? AND book_id = ?";
+        $request_stmt = $conn->prepare($request_sql);
+        $request_stmt->bind_param("ii", $user_id, $book_id);
+        $request_stmt->execute();
+        $request_result = $request_stmt->get_result();
         
-        // Check if already selected
-        $check_sql = "SELECT id FROM book_transcription WHERE user_id = ? AND book_id = ?";
-        $check_stmt = $conn->prepare($check_sql);
-        $check_stmt->bind_param("ii", $user_id, $book_id);
-        $check_stmt->execute();
-        
-        if ($check_stmt->get_result()->num_rows > 0) {
-            echo json_encode(['success' => false, 'message' => 'This book is already in your list.']);
+        if ($request_result->num_rows > 0) {
+            $existing_request = $request_result->fetch_assoc();
+
+            if ($existing_request['request_status'] === 'pending') {
+                echo json_encode(['success' => false, 'message' => 'You already have a pending request for this book.']);
+                exit();
+            }
+
+            $update_sql = "UPDATE book_transcription_requests
+                           SET request_status = 'pending', requested_at = NOW(), reviewed_at = NULL, reviewed_by = NULL, review_notes = NULL
+                           WHERE id = ?";
+            $update_stmt = $conn->prepare($update_sql);
+            $update_stmt->bind_param("i", $existing_request['id']);
+
+            if ($update_stmt->execute()) {
+                echo json_encode(['success' => true, 'message' => 'Request submitted again. Admin will review it.']);
+            } else {
+                throw new Exception('Failed to submit request');
+            }
         } else {
-            $sql = "INSERT INTO book_transcription (user_id, book_id, status, started_date) 
-                    VALUES (?, ?, 'selected', CURDATE())";
+            $sql = "INSERT INTO book_transcription_requests (user_id, book_id, request_status, requested_at)
+                    VALUES (?, ?, 'pending', NOW())";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ii", $user_id, $book_id);
             
             if ($stmt->execute()) {
-                echo json_encode(['success' => true, 'message' => 'Book added successfully!']);
+                echo json_encode(['success' => true, 'message' => 'Request submitted successfully!']);
             } else {
-                throw new Exception('Failed to add book');
+                throw new Exception('Failed to submit request');
             }
         }
     } elseif ($action === 'update_progress') {
@@ -57,7 +93,7 @@ try {
         $check_sql = "SELECT bm.total_pages 
                       FROM books_master bm 
                       JOIN book_transcription bt ON bm.id = bt.book_id 
-                      WHERE bt.user_id = ? AND bt.book_id = ?";
+                      WHERE bt.user_id = ? AND bt.book_id = ? AND bt.status IN ('selected', 'completed')";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->bind_param("ii", $user_id, $book_id);
         $check_stmt->execute();
@@ -103,7 +139,7 @@ try {
         
         $sql = "UPDATE book_transcription 
                 SET status = 'completed', completed_date = CURDATE(), notes = ?, pages_completed = ?
-                WHERE user_id = ? AND book_id = ?";
+            WHERE user_id = ? AND book_id = ? AND status IN ('selected', 'completed')";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("siii", $notes, $total_pages, $user_id, $book_id);
         

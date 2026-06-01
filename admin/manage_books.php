@@ -78,12 +78,132 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = 'Failed to activate book.';
         }
+    } elseif ($action === 'assign_book') {
+        $book_id = intval($_POST['book_id']);
+        $user_id = intval($_POST['user_id']);
+
+        $check_sql = "SELECT id, status FROM book_transcription WHERE book_id = ?";
+        $check_stmt = $conn->prepare($check_sql);
+        $check_stmt->bind_param("i", $book_id);
+        $check_stmt->execute();
+        $existing = $check_stmt->get_result()->fetch_assoc();
+
+        if ($existing && in_array($existing['status'], ['selected', 'completed'], true)) {
+            $error = 'This book is already tagged to a user. Revoke the current access first.';
+        } else {
+            if ($existing) {
+                $sql = "UPDATE book_transcription
+                        SET user_id = ?, pages_completed = 0, started_date = CURDATE(), completed_date = NULL, status = 'selected', notes = NULL
+                        WHERE book_id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ii", $user_id, $book_id);
+            } else {
+                $sql = "INSERT INTO book_transcription (user_id, book_id, pages_completed, started_date, status)
+                        VALUES (?, ?, 0, CURDATE(), 'selected')";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ii", $user_id, $book_id);
+            }
+
+            if ($stmt->execute()) {
+                $success = 'Book assigned successfully!';
+            } else {
+                $error = 'Failed to assign book.';
+            }
+        }
+    } elseif ($action === 'approve_request') {
+        $request_id = intval($_POST['request_id']);
+
+        $request_sql = "SELECT * FROM book_transcription_requests WHERE id = ? AND request_status = 'pending'";
+        $request_stmt = $conn->prepare($request_sql);
+        $request_stmt->bind_param("i", $request_id);
+        $request_stmt->execute();
+        $request = $request_stmt->get_result()->fetch_assoc();
+
+        if (!$request) {
+            $error = 'Request not found or already reviewed.';
+        } else {
+            $book_check_sql = "SELECT id, status FROM book_transcription WHERE book_id = ?";
+            $book_check_stmt = $conn->prepare($book_check_sql);
+            $book_check_stmt->bind_param("i", $request['book_id']);
+            $book_check_stmt->execute();
+            $existing = $book_check_stmt->get_result()->fetch_assoc();
+
+            if ($existing && in_array($existing['status'], ['selected', 'completed'], true)) {
+                $error = 'This book is already tagged to a user.';
+            } else {
+                if ($existing) {
+                    $assign_sql = "UPDATE book_transcription
+                                   SET user_id = ?, pages_completed = 0, started_date = CURDATE(), completed_date = NULL, status = 'selected', notes = NULL
+                                   WHERE book_id = ?";
+                    $assign_stmt = $conn->prepare($assign_sql);
+                    $assign_stmt->bind_param("ii", $request['user_id'], $request['book_id']);
+                } else {
+                    $assign_sql = "INSERT INTO book_transcription (user_id, book_id, pages_completed, started_date, status)
+                                   VALUES (?, ?, 0, CURDATE(), 'selected')";
+                    $assign_stmt = $conn->prepare($assign_sql);
+                    $assign_stmt->bind_param("ii", $request['user_id'], $request['book_id']);
+                }
+
+                if ($assign_stmt->execute()) {
+                    $review_sql = "UPDATE book_transcription_requests
+                                   SET request_status = 'approved', reviewed_at = NOW(), reviewed_by = ?, review_notes = NULL
+                                   WHERE id = ?";
+                    $review_stmt = $conn->prepare($review_sql);
+                    $reviewer_id = $_SESSION['user_id'];
+                    $review_stmt->bind_param("ii", $reviewer_id, $request_id);
+                    if ($review_stmt->execute()) {
+                        $success = 'Request approved and book assigned.';
+                    } else {
+                        $error = 'Book assigned, but request review could not be saved.';
+                    }
+                } else {
+                    $error = 'Failed to approve request.';
+                }
+            }
+        }
+    } elseif ($action === 'reject_request') {
+        $request_id = intval($_POST['request_id']);
+        $review_sql = "UPDATE book_transcription_requests
+                       SET request_status = 'rejected', reviewed_at = NOW(), reviewed_by = ?, review_notes = NULL
+                       WHERE id = ? AND request_status = 'pending'";
+        $review_stmt = $conn->prepare($review_sql);
+        $reviewer_id = $_SESSION['user_id'];
+        $review_stmt->bind_param("ii", $reviewer_id, $request_id);
+
+        if ($review_stmt->execute() && $review_stmt->affected_rows > 0) {
+            $success = 'Request rejected.';
+        } else {
+            $error = 'Failed to reject request.';
+        }
+    } elseif ($action === 'revoke_assignment') {
+        $book_id = intval($_POST['book_id'] ?? $_POST['id'] ?? 0);
+        $sql = "UPDATE book_transcription SET status = 'revoked' WHERE book_id = ? AND status IN ('selected', 'completed')";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $book_id);
+
+        if ($stmt->execute() && $stmt->affected_rows > 0) {
+            $success = 'Access revoked successfully.';
+        } else {
+            $error = 'Failed to revoke access.';
+        }
     }
 }
 
-// Get all books
-$sql = "SELECT * FROM books_master ORDER BY display_order, id";
-$books = $conn->query($sql);
+// Dashboard data
+$books = get_books_with_assignments($conn);
+$available_books = get_available_books($conn);
+$pending_requests = get_pending_book_requests($conn);
+$all_users = $conn->query("SELECT id, name, its_number FROM users ORDER BY name ASC");
+
+$active_books_result = $conn->query("SELECT 
+        COUNT(*) AS total_books,
+        SUM(CASE WHEN bt.id IS NULL THEN 1 ELSE 0 END) AS available_books,
+        SUM(CASE WHEN bt.id IS NOT NULL THEN 1 ELSE 0 END) AS assigned_books
+    FROM books_master bm
+    LEFT JOIN book_transcription bt ON bt.book_id = bm.id AND bt.status IN ('selected', 'completed')
+    WHERE bm.is_active = 1");
+$active_books_stats = $active_books_result ? $active_books_result->fetch_assoc() : ['total_books' => 0, 'available_books' => 0, 'assigned_books' => 0];
+$pending_request_count = $pending_requests ? $pending_requests->num_rows : 0;
 
 require_once '../includes/header.php';
 ?>
@@ -98,6 +218,135 @@ require_once '../includes/header.php';
     <?php if ($success): ?>
         <div class="alert alert-success"><?php echo $success; ?></div>
     <?php endif; ?>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <h4>Active Books</h4>
+                <div class="stat-icon"><i class="fas fa-book"></i></div>
+            </div>
+            <div class="stat-value"><?php echo (int)($active_books_stats['total_books'] ?? 0); ?></div>
+            <div class="stat-label">Published kutub</div>
+        </div>
+
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <h4>Tagged Kutub</h4>
+                <div class="stat-icon"><i class="fas fa-user-tag"></i></div>
+            </div>
+            <div class="stat-value"><?php echo (int)($active_books_stats['assigned_books'] ?? 0); ?></div>
+            <div class="stat-label">Currently assigned</div>
+        </div>
+
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <h4>Available</h4>
+                <div class="stat-icon"><i class="fas fa-unlock"></i></div>
+            </div>
+            <div class="stat-value"><?php echo (int)($active_books_stats['available_books'] ?? 0); ?></div>
+            <div class="stat-label">Ready for request</div>
+        </div>
+
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <h4>Pending Requests</h4>
+                <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+            </div>
+            <div class="stat-value"><?php echo (int)$pending_request_count; ?></div>
+            <div class="stat-label">Awaiting review</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-user-plus"></i> Assign Kutub Manually</h3>
+        </div>
+        <div style="padding: var(--spacing-lg);">
+            <form method="POST" action="" class="action-buttons" style="align-items: flex-end; gap: 12px;">
+                <input type="hidden" name="action" value="assign_book">
+                <div class="form-group" style="flex: 1; min-width: 220px; margin-bottom: 0;">
+                    <label>Available Book</label>
+                    <select name="book_id" class="form-control" required>
+                        <option value="">-- Choose an available book --</option>
+                        <?php if ($available_books && $available_books->num_rows > 0): ?>
+                            <?php while ($book = $available_books->fetch_assoc()): ?>
+                                <option value="<?php echo $book['id']; ?>"><?php echo htmlspecialchars($book['book_name']); ?></option>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 220px; margin-bottom: 0;">
+                    <label>User</label>
+                    <select name="user_id" class="form-control" required>
+                        <option value="">-- Choose a user --</option>
+                        <?php if ($all_users && $all_users->num_rows > 0): ?>
+                            <?php while ($user = $all_users->fetch_assoc()): ?>
+                                <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['name']); ?> (<?php echo htmlspecialchars($user['its_number']); ?>)</option>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-link"></i> Tag User to Book
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-bell"></i> Book Requests</h3>
+        </div>
+        <div class="table-container">
+            <?php if ($pending_requests && $pending_requests->num_rows > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>User</th>
+                            <th>Book</th>
+                            <th>Requested</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($request = $pending_requests->fetch_assoc()): ?>
+                            <tr>
+                                <td>#<?php echo $request['id']; ?></td>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($request['user_name']); ?></strong><br>
+                                    <small><?php echo htmlspecialchars($request['user_its']); ?></small>
+                                </td>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($request['book_name']); ?></strong><br>
+                                    <small><?php echo $request['total_pages']; ?> pages</small>
+                                </td>
+                                <td><?php echo date('M d, Y H:i', strtotime($request['requested_at'])); ?></td>
+                                <td>
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="action" value="approve_request">
+                                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this request and assign the book?');">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="action" value="reject_request">
+                                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this request?');">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="text-center">No pending requests right now.</p>
+            <?php endif; ?>
+        </div>
+    </div>
 
     <!-- Add New Book Form -->
     <div class="card">
@@ -141,7 +390,7 @@ require_once '../includes/header.php';
     <!-- Books List -->
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-list"></i> All Books</h3>
+            <h3><i class="fas fa-list"></i> Kutub Assignment Overview</h3>
         </div>
         <div class="table-container">
             <?php if ($books->num_rows > 0): ?>
@@ -150,48 +399,64 @@ require_once '../includes/header.php';
                         <tr>
                             <th>ID</th>
                             <th>Book Name</th>
-                            <th>Arabic Name</th>
-                            <th>Author</th>
-                            <th>Total Pages</th>
-                            <th>Status</th>
+                            <th>Assigned User</th>
+                            <th>Progress</th>
+                            <th>State</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php while ($book = $books->fetch_assoc()): ?>
+                            <?php
+                                $is_assigned = !empty($book['assigned_user_id']);
+                                $pages_completed = (int)($book['pages_completed'] ?? 0);
+                                $total_pages = (int)($book['total_pages'] ?? 0);
+                                $progress_pct = $total_pages > 0 ? round(($pages_completed / $total_pages) * 100, 2) : 0;
+                            ?>
                             <tr>
                                 <td><?php echo $book['id']; ?></td>
                                 <td><?php echo htmlspecialchars($book['book_name']); ?></td>
-                                <td dir="rtl"><?php echo htmlspecialchars($book['book_name_arabic']); ?></td>
-                                <td><?php echo htmlspecialchars($book['author']); ?></td>
-                                <td><?php echo $book['total_pages']; ?></td>
                                 <td>
-                                    <?php if ($book['is_active']): ?>
-                                        <span class="badge badge-success">Active</span>
+                                    <?php if ($is_assigned): ?>
+                                        <strong><?php echo htmlspecialchars($book['assigned_user_name']); ?></strong><br>
+                                        <small><?php echo htmlspecialchars($book['assigned_user_its']); ?></small>
                                     <?php else: ?>
-                                        <span class="badge badge-danger">Inactive</span>
+                                        <span class="badge badge-secondary">Unassigned</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button onclick="editBook(<?php echo htmlspecialchars(json_encode($book)); ?>)" class="btn btn-sm btn-primary">
+                                    <?php if ($is_assigned): ?>
+                                        <div class="progress-bar" style="height: 8px; margin-bottom: 0.35rem;">
+                                            <div class="progress-fill" style="width: <?php echo $progress_pct; ?>%;"></div>
+                                        </div>
+                                        <small><?php echo $pages_completed; ?> / <?php echo $total_pages; ?> pages</small>
+                                    <?php else: ?>
+                                        <span style="color: var(--text-secondary);">Not started</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!$book['is_active']): ?>
+                                        <span class="badge badge-danger">Inactive</span>
+                                    <?php elseif ($is_assigned): ?>
+                                        <span class="badge badge-success"><?php echo ucfirst($book['assignment_status']); ?></span>
+                                    <?php else: ?>
+                                        <span class="badge badge-warning">Available</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <button onclick='editBook(<?php echo json_encode($book, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)' class="btn btn-sm btn-primary">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <?php if ($book['is_active']): ?>
+                                    <?php if ($is_assigned): ?>
                                         <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this book?');">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="<?php echo $book['id']; ?>">
+                                            <input type="hidden" name="action" value="revoke_assignment">
+                                            <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
                                             <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-ban"></i> Deactivate
+                                                <i class="fas fa-user-slash"></i> Revoke Access
                                             </button>
                                         </form>
                                     <?php else: ?>
-                                        <form method="POST" style="display:inline;">
-                                            <input type="hidden" name="action" value="activate">
-                                            <input type="hidden" name="id" value="<?php echo $book['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="fas fa-check"></i> Activate
-                                            </button>
-                                        </form>
+                                        <span style="color: var(--text-secondary);">Use manual assignment above or a request approval.</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>

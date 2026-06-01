@@ -286,7 +286,7 @@ function get_recent_ziyarat_entries($conn, $user_id, $limit = 20) {
     return $stmt->get_result();
 }
 
-// Get Book transcription progress for a user (only selected/completed books)
+// Get Book transcription progress for a user (only active assignments)
 function get_book_progress($conn, $user_id) {
     $sql = "SELECT 
                 bm.id,
@@ -299,7 +299,7 @@ function get_book_progress($conn, $user_id) {
                 bt.notes
             FROM book_transcription bt
             JOIN books_master bm ON bt.book_id = bm.id
-            WHERE bt.user_id = ? AND bm.is_active = 1
+            WHERE bt.user_id = ? AND bm.is_active = 1 AND bt.status IN ('selected', 'completed')
             ORDER BY bt.status DESC, bt.started_date DESC";
     
     $stmt = $conn->prepare($sql);
@@ -325,7 +325,7 @@ function get_book_progress_with_pages($conn, $user_id) {
                 bt.notes
             FROM book_transcription bt
             JOIN books_master bm ON bt.book_id = bm.id
-            WHERE bt.user_id = ?
+            WHERE bt.user_id = ? AND bt.status IN ('selected', 'completed')
             ORDER BY bt.status DESC, bt.started_date DESC";
     
     $stmt = $conn->prepare($sql);
@@ -334,10 +334,93 @@ function get_book_progress_with_pages($conn, $user_id) {
     return $stmt->get_result();
 }
 
-// Get all available books for selection
+// Get all available books for request/assignment (active and not currently assigned)
 function get_available_books($conn) {
-    $sql = "SELECT * FROM books_master WHERE is_active = 1 ORDER BY display_order";
+    $sql = "SELECT bm.*
+            FROM books_master bm
+            LEFT JOIN book_transcription bt
+                ON bt.book_id = bm.id AND bt.status IN ('selected', 'completed')
+            WHERE bm.is_active = 1 AND bt.id IS NULL
+            ORDER BY bm.display_order, bm.id";
     return $conn->query($sql);
+}
+
+// Get all books with their current active assignment info for admin views
+function get_books_with_assignments($conn) {
+    $sql = "SELECT 
+                bm.id,
+                bm.book_name,
+                bm.book_name_arabic,
+                bm.author,
+                bm.total_pages,
+                bm.description,
+                bm.is_active,
+                bm.display_order,
+                bt.user_id AS assigned_user_id,
+                bt.status AS assignment_status,
+                bt.pages_completed,
+                bt.started_date,
+                bt.completed_date,
+                bt.notes,
+                u.name AS assigned_user_name,
+                u.its_number AS assigned_user_its
+            FROM books_master bm
+            LEFT JOIN book_transcription bt
+                ON bt.book_id = bm.id AND bt.status IN ('selected', 'completed')
+            LEFT JOIN users u ON u.id = bt.user_id
+            ORDER BY bm.display_order, bm.id";
+
+    return $conn->query($sql);
+}
+
+// Get pending book requests for admin review
+function get_pending_book_requests($conn) {
+    $sql = "SELECT 
+                br.id,
+                br.user_id,
+                br.book_id,
+                br.request_status,
+                br.requested_at,
+                br.reviewed_at,
+                br.review_notes,
+                u.name AS user_name,
+                u.its_number AS user_its,
+                bm.book_name,
+                bm.book_name_arabic,
+                bm.total_pages
+            FROM book_transcription_requests br
+            JOIN users u ON u.id = br.user_id
+            JOIN books_master bm ON bm.id = br.book_id
+            WHERE br.request_status = 'pending'
+            ORDER BY br.requested_at ASC, br.id ASC";
+
+    return $conn->query($sql);
+}
+
+// Check if a user already has an active kutub assignment
+function user_has_active_book_assignment($conn, $user_id) {
+    $sql = "SELECT COUNT(*) AS total
+            FROM book_transcription
+        WHERE user_id = ? AND status = 'selected'";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+
+    return (int)($row['total'] ?? 0) > 0;
+}
+
+// Check whether a specific book is currently assigned
+function book_has_active_assignment($conn, $book_id) {
+    $sql = "SELECT COUNT(*) AS total
+            FROM book_transcription
+            WHERE book_id = ? AND status IN ('selected', 'completed')";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $book_id);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+
+    return (int)($row['total'] ?? 0) > 0;
 }
 
 // Get overall Amali progress summary

@@ -10,11 +10,13 @@ $js_path = '../assets/js/';
 
 $user_id = $_SESSION['user_id'];
 
-// Get user's selected books with page tracking
+// Get user's assigned books with page tracking
 $my_books = get_book_progress_with_pages($conn, $user_id);
 
-// Get all available books
+// Get all available books that are not yet tagged to any user
 $all_books = get_available_books($conn);
+
+$has_assigned_books = user_has_active_book_assignment($conn, $user_id);
 
 // Create array of selected book IDs
 $selected_book_ids = [];
@@ -37,6 +39,13 @@ require_once '../includes/header.php';
         gap: 15px;
         margin-bottom: 15px;
     }
+    .empty-state {
+        padding: 1rem 1.25rem;
+        border: 1px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+    }
     @media (max-width: 480px) {
         .book-header {
             flex-direction: column;
@@ -57,7 +66,7 @@ require_once '../includes/header.php';
     <!-- My Books Section -->
     <div id="my-books-container">
         <?php if ($my_books->num_rows > 0): ?>
-            <h2 class="mb-3" style="font-size: 1.25rem;"><i class="fas fa-list"></i> My Kutub</h2>
+            <h2 class="mb-3" style="font-size: 1.25rem;"><i class="fas fa-list"></i> My Tagged Kutub</h2>
             <?php while ($book = $my_books->fetch_assoc()): ?>
             <?php 
                 $pages_completed = $book['pages_completed'] ?? 0;
@@ -137,39 +146,52 @@ require_once '../includes/header.php';
                 </div>
             </div>
             <?php endwhile; ?>
+        <?php else: ?>
+            <div class="empty-state">
+                <strong>No kutub are tagged to your account yet.</strong>
+                <div style="margin-top: 0.5rem;">Use the request section below to ask the admin for an available book.</div>
+            </div>
         <?php endif; ?>
     </div>
 
-    <!-- Available Books -->
+    <!-- Request Books -->
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-plus-circle"></i> Add New Kutub</h3>
+            <h3><i class="fas fa-plus-circle"></i> Request Kutub Access</h3>
         </div>
         <div style="padding: var(--spacing-lg);">
-            <form class="ajax-book-form" data-action="select">
-                <input type="hidden" name="action" value="select">
-                <div class="form-group">
-                    <label>Select Book</label>
-                    <select name="book_id" class="form-control" required>
-                        <option value="">-- Choose a Book --</option>
-                        <?php 
-                        $all_books->data_seek(0);
-                        while ($book = $all_books->fetch_assoc()): 
-                            if (!in_array($book['id'], $selected_book_ids)):
-                        ?>
-                            <option value="<?php echo $book['id']; ?>">
-                                <?php echo htmlspecialchars($book['book_name']); ?> (<?php echo $book['total_pages']; ?> pages)
-                            </option>
-                        <?php 
-                            endif;
-                        endwhile; 
-                        ?>
-                    </select>
+            <?php if ($has_assigned_books): ?>
+                <div class="empty-state">
+                    You already have tagged kutub. New requests are hidden until admin review or until you are released.
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-plus"></i> Add to My List
-                </button>
-            </form>
+            <?php else: ?>
+                <?php if ($all_books->num_rows > 0): ?>
+                    <form class="ajax-book-form" data-action="request_book">
+                        <input type="hidden" name="action" value="request_book">
+                        <div class="form-group">
+                            <label>Select Book</label>
+                            <select name="book_id" class="form-control" required>
+                                <option value="">-- Choose an available book --</option>
+                                <?php 
+                                $all_books->data_seek(0);
+                                while ($book = $all_books->fetch_assoc()):
+                                ?>
+                                    <option value="<?php echo $book['id']; ?>">
+                                        <?php echo htmlspecialchars($book['book_name']); ?> (<?php echo $book['total_pages']; ?> pages)
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-paper-plane"></i> Send Request to Admin
+                        </button>
+                    </form>
+                <?php else: ?>
+                    <div class="empty-state">
+                        No unassigned active books are available right now.
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -195,7 +217,7 @@ document.querySelectorAll('.ajax-book-form').forEach(form => {
 
             if (result.success) {
                 showToast(result.message, 'success');
-                if (action === 'select' || action === 'complete') {
+                if (action === 'request_book' || action === 'complete') {
                     // Reload to reflect significant structure changes
                     setTimeout(() => location.reload(), 1000);
                 } else if (action === 'update_progress') {

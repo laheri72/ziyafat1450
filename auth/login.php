@@ -163,7 +163,7 @@ $page_title = 'Login';
         <!-- Footer -->
         <div class="auth-footer">
             <p>© 1450 H · Ziyafat us Shukr</p>
-        
+            <p><a href="../privacy-policy.php" style="color: #64748b; text-decoration: none; font-size: 0.8rem;">Privacy Policy</a></p>
         </div>
 
     </div>

@@ -6,3 +6,4 @@ database/*_dump.sql
 database/*.sql
 !database/ziyafat1450_schema.sql
 database/exports/
+auth/register.php

@@ -21,6 +21,154 @@ init_session();
             }
         })();
     </script>
+    <style>
+        /* Admin Notification Styles */
+        .topbar-notif {
+            position: relative;
+            margin-right: 1.5rem;
+        }
+        .notif-toggle {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.25rem;
+            cursor: pointer;
+            position: relative;
+            padding: 5px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notif-toggle:hover {
+            color: var(--primary-600);
+        }
+        .notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 10px;
+            border: 2px solid white;
+            min-width: 18px;
+            text-align: center;
+        }
+        .notif-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            margin-top: 10px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            animation: slideDown 0.2s ease-out;
+        }
+        .notif-dropdown.show {
+            display: block;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notif-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+        .notif-header h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+        .notif-body {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .notif-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #475569;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .notif-item:hover {
+            background: #f1f5f9;
+        }
+        .notif-icon {
+            width: 36px;
+            height: 36px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notif-content p {
+            margin: 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .notif-content small {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: block;
+        }
+        .notif-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .notif-empty i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #cbd5e1;
+        }
+        .notif-footer {
+            padding: 10px;
+            text-align: center;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        .notif-footer a {
+            font-size: 0.85rem;
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .notif-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .notif-dropdown {
+                position: fixed;
+                top: 70px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+            .topbar-notif {
+                margin-right: 1rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -210,6 +358,54 @@ init_session();
                     </div>
 
                     <div class="topbar-right">
+                        <?php if (can_manage_amali_masters()): ?>
+                            <!-- Admin Notifications -->
+                            <?php
+                            $notif_requests = get_pending_book_requests($GLOBALS['conn']);
+                            $notif_count = $notif_requests->num_rows;
+                            $notif_glance = get_pending_book_requests_glance($GLOBALS['conn'], 5);
+                            ?>
+                            <div class="topbar-notif" id="adminNotifDropdown">
+                                <button class="notif-toggle" id="notifToggle" title="View Requests">
+                                    <i class="fas fa-bell"></i>
+                                    <?php if ($notif_count > 0): ?>
+                                        <span class="notif-badge"><?php echo $notif_count; ?></span>
+                                    <?php endif; ?>
+                                </button>
+                                <div class="notif-dropdown" id="notifMenu">
+                                    <div class="notif-header">
+                                        <h4>Pending Requests</h4>
+                                        <?php if ($notif_count > 0): ?>
+                                            <span style="background:#ef4444; color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;"><?php echo $notif_count; ?> NEW</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="notif-body">
+                                        <?php if ($notif_count > 0): ?>
+                                            <?php while ($req = $notif_glance->fetch_assoc()): ?>
+                                                <a href="../admin/manage_books.php#pending-requests" class="notif-item">
+                                                    <div class="notif-icon">
+                                                        <i class="fas fa-book-reader"></i>
+                                                    </div>
+                                                    <div class="notif-content">
+                                                        <p><strong><?php echo htmlspecialchars($req['user_name']); ?></strong> requested <strong><?php echo htmlspecialchars($req['book_name']); ?></strong></p>
+                                                        <small><i class="far fa-clock"></i> <?php echo date('M d, H:i', strtotime($req['requested_at'])); ?></small>
+                                                    </div>
+                                                </a>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <div class="notif-empty">
+                                                <i class="fas fa-check-circle"></i>
+                                                <p>All caught up!</p>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="notif-footer">
+                                        <a href="../admin/manage_books.php#pending-requests">Manage All Requests <i class="fas fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                         <div class="topbar-user">
                             <div class="user-avatar">
                                 <?php
@@ -285,6 +481,25 @@ init_session();
                             setTimeout(() => toast.remove(), 500);
                         }, 4000);
                     }
+
+                    // Admin Notification Toggle
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const notifToggle = document.getElementById('notifToggle');
+                        const notifMenu = document.getElementById('notifMenu');
+
+                        if (notifToggle && notifMenu) {
+                            notifToggle.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                notifMenu.classList.toggle('show');
+                            });
+
+                            document.addEventListener('click', function(e) {
+                                if (!notifMenu.contains(e.target) && !notifToggle.contains(e.target)) {
+                                    notifMenu.classList.remove('show');
+                                }
+                            });
+                        }
+                    });
                 </script>
     <?php else: ?>
         <!-- Login page layout (no sidebar) -->

@@ -13,10 +13,14 @@ $user_id = $_SESSION['user_id'];
 // Get user's assigned books with page tracking
 $my_books = get_book_progress_with_pages($conn, $user_id);
 
+// Get user's pending requests
+$pending_requests = get_user_pending_book_requests($conn, $user_id);
+
 // Get all available books that are not yet tagged to any user
 $all_books = get_available_books($conn);
 
 $has_assigned_books = user_has_active_book_assignment($conn, $user_id);
+$has_pending_requests = ($pending_requests->num_rows > 0);
 
 // Create array of selected book IDs
 $selected_book_ids = [];
@@ -78,9 +82,40 @@ require_once '../includes/header.php';
 
 <div class="container">
     <div class="page-header">
+        <a href="index.php" style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; color: #666; text-decoration: none; font-weight: 500; font-size: 14px; padding: 6px 12px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
         <h1><i class="fas fa-book"></i> Istinsakh ul Kutub</h1>
         <p>Select and track your book transcription progress</p>
     </div>
+
+    <!-- Pending Requests Section -->
+    <?php if ($has_pending_requests): ?>
+        <div id="pending-requests-container" class="mb-4">
+            <h2 class="mb-3" style="font-size: 1.25rem; color: var(--warning-700);"><i class="fas fa-clock-rotate-left"></i> Application Pending</h2>
+            <?php while ($req = $pending_requests->fetch_assoc()): ?>
+                <div class="card" style="border-left: 5px solid var(--warning) !important; background: #fffdf5 !important;">
+                    <div class="card-header" style="background: transparent; border-bottom: none; padding-bottom: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; color: #856404;"><?php echo htmlspecialchars($req['book_name']); ?></h3>
+                                <p style="font-size: 0.85rem; color: #997404;">Requested on <?php echo date('M d, Y', strtotime($req['requested_at'])); ?></p>
+                            </div>
+                            <span class="badge badge-warning" style="padding: 6px 12px; font-size: 0.75rem;">Awaiting Admin Review</span>
+                        </div>
+                    </div>
+                    <div style="padding: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);">
+                        <p dir="rtl" style="font-size: 1.25rem; color: var(--primary-600); margin-bottom: 10px;"><?php echo htmlspecialchars($req['book_name_arabic']); ?></p>
+                        <div style="font-size: 0.9rem; color: #666; display: flex; gap: 20px;">
+                            <span><strong>Author:</strong> <?php echo htmlspecialchars($req['author']); ?></span>
+                            <span><strong>Total Pages:</strong> <?php echo $req['total_pages']; ?></span>
+                        </div>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+            <?php $pending_requests->data_seek(0); // Reset for possible further use ?>
+        </div>
+    <?php endif; ?>
 
     <!-- My Books Section -->
     <div id="my-books-container">
@@ -179,9 +214,13 @@ require_once '../includes/header.php';
             <h3><i class="fas fa-plus-circle"></i> Request Kutub Access</h3>
         </div>
         <div style="padding: var(--spacing-lg);">
-            <?php if ($has_assigned_books): ?>
+            <?php if ($has_assigned_books || $has_pending_requests): ?>
                 <div class="empty-state">
-                    You already have tagged kutub. New requests are hidden until admin review or until you are released.
+                    <?php if ($has_assigned_books): ?>
+                        You already have tagged kutub. New requests are hidden until admin review or until you are released.
+                    <?php else: ?>
+                        Your request for a book is currently pending. Please wait for admin approval before making another request.
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <?php if ($all_books->num_rows > 0): ?>

@@ -458,4 +458,46 @@ function get_amali_summary($conn, $user_id) {
     return array_merge($quran_data, $dua_data, $ziyarat_data, $book_data);
 }
 
+// Get pending book requests for admin notification (limited to latest 5)
+function get_pending_book_requests_glance($conn, $limit = 5) {
+    $sql = "SELECT 
+                br.id,
+                u.name AS user_name,
+                bm.book_name,
+                br.requested_at
+            FROM book_transcription_requests br
+            JOIN users u ON u.id = br.user_id
+            JOIN books_master bm ON bm.id = br.book_id
+            WHERE br.request_status = 'pending'
+            ORDER BY br.requested_at DESC
+            LIMIT ?";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Get pending book requests for a specific user
+function get_user_pending_book_requests($conn, $user_id) {
+    $sql = "SELECT 
+                br.id,
+                br.requested_at,
+                bm.book_name,
+                bm.book_name_arabic,
+                bm.author,
+                bm.total_pages
+            FROM book_transcription_requests br
+            JOIN books_master bm ON bm.id = br.book_id
+            WHERE br.user_id = ? AND br.request_status = 'pending'
+            ORDER BY br.requested_at DESC";
+            
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+
+
 ?>

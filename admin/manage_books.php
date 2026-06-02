@@ -293,7 +293,7 @@ require_once '../includes/header.php';
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="pending-requests">
         <div class="card-header">
             <h3><i class="fas fa-bell"></i> Book Requests</h3>
         </div>

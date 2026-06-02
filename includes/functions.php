@@ -103,7 +103,7 @@ function get_assigned_category() {
 // Redirect if not logged in
 function require_login() {
     if (!is_logged_in()) {
-        header('Location: ../auth/login.php');
+        header('Location: ../index.php');
         exit();
     }
 }

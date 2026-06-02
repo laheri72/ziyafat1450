@@ -1,8 +1,7 @@
 # Routes and Pages
 
 ## Public Routes
-- `/index.php`: Root entry point, redirects based on role.
-- `/auth/login.php`: User/Admin authentication.
+- `/index.php`: Landing page, User/Admin authentication, and role-based redirection.
 - `/auth/logout.php`: Destroys session and redirects to login.
 - `/auth/register.php`: New user registration.
 

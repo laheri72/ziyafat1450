@@ -3,7 +3,7 @@
 ## Critical Risks
 
 ### 1. Plain-text Passwords
-- **Discovery:** `auth/login.php` compares input passwords directly with the value in `users.password`.
+- **Discovery:** `index.php` (login logic) handles password verification and seamless migration to hashes.
 - **Impact:** If the database is compromised, all user passwords are exposed.
 - **Recommendation:** Migration to `password_hash()` and `password_verify()`.
 

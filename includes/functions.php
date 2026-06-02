@@ -4,8 +4,24 @@
 // Start session if not already started
 function init_session() {
     if (session_status() === PHP_SESSION_NONE) {
+        // Set secure session cookie parameters
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
         session_start();
     }
+
+    // Security Headers to prevent phishing/clickjacking
+    header("X-Frame-Options: DENY");
+    header("X-Content-Type-Options: nosniff");
+    header("X-XSS-Protection: 1; mode=block");
+    header("Referrer-Policy: strict-origin-when-cross-origin");
+    header("Content-Security-Policy: default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;");
 }
 
 // Check if user is logged in

@@ -3,7 +3,11 @@
             <?php if (is_logged_in()): ?>
             <!-- Footer -->
             <footer class="footer">
-                <p>&copy; <?php echo date('Y'); ?> Ziyafat us Shukr. All rights reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> Ziyafat-us-Shukr 1450H | Built by 
+                <a href="https://github.com/laheri72/" target="_blank" class="text-light ms-1" style="color: #f8f9fa !important; text-decoration: none;">
+                    <i class="fab fa-github"></i> <strong>Laheri72</strong>
+                </a>
+                </p>
             </footer>
         </div>
     </div>

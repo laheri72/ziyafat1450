@@ -214,7 +214,32 @@ init_session();
                             <div class="user-avatar">
                                 <?php
                                 $logged_in_user = get_user_by_id($GLOBALS['conn'], $_SESSION['user_id']);
-                                echo strtoupper(substr($logged_in_user['name'], 0, 2));
+                                $words = array_values(array_filter(explode(' ', trim($logged_in_user['name']))));
+                                $initials = '';
+                                if (!empty($words)) {
+                                    $first_idx = 0;
+                                    // If first word is "Mulla" and there are more words, skip it for the first initial
+                                    if (strtolower($words[0]) === 'mulla' && count($words) > 1) {
+                                        $first_idx = 1;
+                                    }
+                                    
+                                    $first_init = strtoupper(substr($words[$first_idx], 0, 1));
+                                    
+                                    if (count($words) > ($first_idx + 1)) {
+                                        $last_idx = count($words) - 1;
+                                        // If last word is "wala" and there is a word before it (not the one used for first_init)
+                                        if (strtolower($words[$last_idx]) === 'wala' && $last_idx > ($first_idx + 1)) {
+                                            $second_init = strtoupper(substr($words[$last_idx - 1], 0, 1));
+                                        } else {
+                                            $second_init = strtoupper(substr($words[$last_idx], 0, 1));
+                                        }
+                                        $initials = $first_init . $second_init;
+                                    } else {
+                                        // If only one meaningful word remains
+                                        $initials = strtoupper(substr($words[$first_idx], 0, 2));
+                                    }
+                                }
+                                echo $initials;
                                 ?>
                             </div>
                             <div class="user-info">

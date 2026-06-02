@@ -17,7 +17,10 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $its_number = clean_input($_POST['its_number']);
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        $error = 'Invalid security token. Please try again.';
+    } else {
+        $its_number = clean_input($_POST['its_number']);
     $tr_number = clean_input($_POST['tr_number']);
     $category = clean_input($_POST['category']);
     $name = clean_input($_POST['name']);
@@ -41,9 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Email or ITS number already exists';
         } else {
             // Insert new user
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $sql = "INSERT INTO users (its_number, tr_number, category, name, email, phone_number, password, role, admin_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssssss", $its_number, $tr_number, $category, $name, $email, $phone_number, $password, $role, $admin_type);
+            $stmt->bind_param("sssssssss", $its_number, $tr_number, $category, $name, $email, $phone_number, $hashed_password, $role, $admin_type);
 
             if ($stmt->execute()) {
                 $success = 'User added successfully!';
@@ -51,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Failed to add user. Please try again.';
             }
         }
+    }
     }
 }
 

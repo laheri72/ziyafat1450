@@ -17,40 +17,62 @@ if (is_logged_in()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $its_number = clean_input($_POST['its_number']);
-    $password = $_POST['password'];
-
-    if (empty($its_number) || empty($password)) {
-        $error = 'Please fill in all fields';
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        $error = 'Invalid security token. Please try again.';
     } else {
-        $sql = "SELECT * FROM users WHERE its_number = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $its_number);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $its_number = clean_input($_POST['its_number']);
+        $password = $_POST['password'];
 
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
-            
-            // Plain text password comparison
-            if ($password === $user['password']) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['name'] = $user['name'];
-                $_SESSION['its_number'] = $user['its_number'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['admin_type'] = $user['admin_type'] ?? null;
-
-                if ($user['role'] === 'admin') {
-                    header('Location: ../admin/index.php');
-                } else {
-                    header('Location: ../user/index.php');
-                }
-                exit();
-            } else {
-                $error = 'Invalid ITS  or password';
-            }
+        if (empty($its_number) || empty($password)) {
+            $error = 'Please fill in all fields';
         } else {
-            $error = 'Invalid ITS or password';
+            $sql = "SELECT * FROM users WHERE its_number = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $its_number);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 1) {
+                $user = $result->fetch_assoc();
+                
+                // Password verification with seamless migration to hashes
+                $password_matched = false;
+                $needs_rehash = false;
+
+                if (password_verify($password, $user['password'])) {
+                    $password_matched = true;
+                } elseif ($password === $user['password']) {
+                    $password_matched = true;
+                    $needs_rehash = true;
+                }
+
+                if ($password_matched) {
+                    if ($needs_rehash) {
+                        $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                        $update_sql = "UPDATE users SET password = ? WHERE id = ?";
+                        $update_stmt = $conn->prepare($update_sql);
+                        $update_stmt->bind_param("si", $new_hash, $user['id']);
+                        $update_stmt->execute();
+                    }
+
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['name'] = $user['name'];
+                    $_SESSION['its_number'] = $user['its_number'];
+                    $_SESSION['role'] = $user['role'];
+                    $_SESSION['admin_type'] = $user['admin_type'] ?? null;
+
+                    if ($user['role'] === 'admin') {
+                        header('Location: ../admin/index.php');
+                    } else {
+                        header('Location: ../user/index.php');
+                    }
+                    exit();
+                } else {
+                    $error = 'Invalid ITS number or password';
+                }
+            } else {
+                $error = 'Invalid ITS number or password';
+            }
         }
     }
 }
@@ -103,6 +125,7 @@ $page_title = 'Login';
 
         <!-- Form -->
         <form method="POST" action="" class="auth-form">
+            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
             <div class="form-group">
                 <label for="its_number">ITS Number</label>
                 <div class="input-wrapper">

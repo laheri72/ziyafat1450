@@ -15,7 +15,10 @@ $success = '';
 $user = get_user_by_id($conn, $_SESSION['user_id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = clean_input($_POST['name']);
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        $error = 'Invalid security token. Please try again.';
+    } else {
+        $name = clean_input($_POST['name']);
     $email = clean_input($_POST['email']);
     $tr_number = clean_input($_POST['tr_number']);
     $category = clean_input($_POST['category']);
@@ -48,14 +51,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Update password if provided
                 if (!empty($current_password) && !empty($new_password)) {
-                    if ($current_password !== $user['password']) {
+                    $password_matched = false;
+                    if (password_verify($current_password, $user['password'])) {
+                        $password_matched = true;
+                    } elseif ($current_password === $user['password']) {
+                        $password_matched = true;
+                    }
+
+                    if (!$password_matched) {
                         $error = 'Current password is incorrect';
                     } elseif ($new_password !== $confirm_password) {
                         $error = 'New passwords do not match';
                     } else {
+                        $hashed_new = password_hash($new_password, PASSWORD_DEFAULT);
                         $sql = "UPDATE users SET password = ? WHERE id = ?";
                         $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("si", $new_password, $_SESSION['user_id']);
+                        $stmt->bind_param("si", $hashed_new, $_SESSION['user_id']);
                         $stmt->execute();
                     }
                 }

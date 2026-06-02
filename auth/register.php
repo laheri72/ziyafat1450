@@ -13,39 +13,44 @@ if (is_logged_in()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $its_number = clean_input($_POST['its_number']);
-    $tr_number = clean_input($_POST['tr_number']);
-    $category = clean_input($_POST['category']);
-    $name = clean_input($_POST['name']);
-    $email = clean_input($_POST['email']);
-    $phone_number = clean_input($_POST['phone_number']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-
-    if (empty($its_number) || empty($name) || empty($email) || empty($password)) {
-        $error = 'Please fill in all required fields';
-    } elseif ($password !== $confirm_password) {
-        $error = 'Passwords do not match';
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        $error = 'Invalid security token. Please try again.';
     } else {
-        // Check if email or ITS number already exists
-        $sql = "SELECT * FROM users WHERE email = ? OR its_number = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $email, $its_number);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $its_number = clean_input($_POST['its_number']);
+        $tr_number = clean_input($_POST['tr_number']);
+        $category = clean_input($_POST['category']);
+        $name = clean_input($_POST['name']);
+        $email = clean_input($_POST['email']);
+        $phone_number = clean_input($_POST['phone_number']);
+        $password = $_POST['password'];
+        $confirm_password = $_POST['confirm_password'];
 
-        if ($result->num_rows > 0) {
-            $error = 'Email or ITS number already exists';
+        if (empty($its_number) || empty($name) || empty($email) || empty($password)) {
+            $error = 'Please fill in all required fields';
+        } elseif ($password !== $confirm_password) {
+            $error = 'Passwords do not match';
         } else {
-            // Insert new user
-            $sql = "INSERT INTO users (its_number, tr_number, category, name, email, phone_number, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'user')";
+            // Check if email or ITS number already exists
+            $sql = "SELECT * FROM users WHERE email = ? OR its_number = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssss", $its_number, $tr_number, $category, $name, $email, $phone_number, $password);
+            $stmt->bind_param("ss", $email, $its_number);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-            if ($stmt->execute()) {
-                $success = 'Registration successful! You can now login.';
+            if ($result->num_rows > 0) {
+                $error = 'Email or ITS number already exists';
             } else {
-                $error = 'Registration failed. Please try again.';
+                // Insert new user
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $sql = "INSERT INTO users (its_number, tr_number, category, name, email, phone_number, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'user')";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sssssss", $its_number, $tr_number, $category, $name, $email, $phone_number, $hashed_password);
+
+                if ($stmt->execute()) {
+                    $success = 'Registration successful! You can now login.';
+                } else {
+                    $error = 'Registration failed. Please try again.';
+                }
             }
         }
     }
@@ -76,6 +81,7 @@ $page_title = 'Register';
             <?php endif; ?>
 
             <form method="POST" action="">
+                <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                 <div class="form-group">
                     <label for="its_number"><i class="fas fa-id-card"></i> ITS Number *</label>
                     <input type="text" id="its_number" name="its_number" class="form-control" required>

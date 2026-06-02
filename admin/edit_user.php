@@ -35,9 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['reset_password'])) {
         if (is_super_admin()) {
             if (!empty($user['tr_number'])) {
+                $hashed_tr = password_hash($user['tr_number'], PASSWORD_DEFAULT);
                 $sql = "UPDATE users SET password = ? WHERE id = ?";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("si", $user['tr_number'], $user_id);
+                $stmt->bind_param("si", $hashed_tr, $user_id);
                 if ($stmt->execute()) {
                     $success = 'Password reset to TR Number (' . $user['tr_number'] . ') successfully!';
                 } else {

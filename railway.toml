@@ -1,5 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[start]
-cmd = "php -S 0.0.0.0:8000"

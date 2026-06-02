@@ -50,6 +50,28 @@ $namaz_progress_detail = get_dua_progress($conn, $user_id, 'namaz');
 require_once '../includes/header.php';
 ?>
 
+<style>
+    /* Professional Card Distinction */
+    .card, .stat-card {
+        border: 1px solid #243b53 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+        background: #ffffff !important;
+    }
+    
+    .card { margin-bottom: 25px !important; }
+
+    .card-header, .stat-card-header {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .card:hover, .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        border-color: var(--primary-500) !important;
+    }
+</style>
+
 <div class="container">
     <div class="page-header">
         <h1><i class="fas fa-chart-pie"></i> Overview Dashboard</h1>

@@ -23,28 +23,38 @@ require_once '../includes/header.php';
 .tab-navigation {
     display: flex;
     gap: 0;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #e0e0e0;
-    background: #f8f9fa;
-    border-radius: 8px 8px 0 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
+    border-radius: 8px;
     overflow: hidden;
+    position: sticky;
+    top: 70px; /* Height of topbar */
+    z-index: 90;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+@media (max-width: 1024px) {
+    .tab-navigation {
+        top: 0; /* Menu toggle topbar height or 0 depending on sticky behavior */
+    }
 }
 
 .tab-button {
     flex: 1;
-    padding: 16px 24px;
+    padding: 12px 15px;
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #666;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .tab-button:hover {
@@ -167,6 +177,25 @@ require_once '../includes/header.php';
         left: 10px;
         min-width: auto;
     }
+}
+
+/* Professional Card Distinction */
+.stats-grid .card {
+    border: 1px solid #243b53 !important; /* Darker Slate/Navy border */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+    margin-bottom: 25px !important;
+    background: #ffffff !important; /* White background to pop against beige body */
+}
+
+.stats-grid .card-header {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.stats-grid .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border-color: var(--primary-500) !important;
 }
 </style>
 

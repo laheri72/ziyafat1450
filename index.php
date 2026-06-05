@@ -59,12 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['name'] = $user['name'];
                     $_SESSION['its_number'] = $user['its_number'];
                     $_SESSION['role'] = $user['role'];
-                    $_SESSION['admin_type'] = $user['admin_type'] ?? null;
+                    $_SESSION['admin_type'] = isset($user['admin_type']) ? $user['admin_type'] : null;
 
+                    // Absolute path redirects are safer on some hosts
+                    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+                    
                     if ($user['role'] === 'admin') {
-                        header('Location: admin/index.php');
+                        header('Location: ' . $base_url . '/admin/index.php');
                     } else {
-                        header('Location: user/index.php');
+                        header('Location: ' . $base_url . '/user/index.php');
                     }
                     exit();
                 } else {

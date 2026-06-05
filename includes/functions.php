@@ -4,23 +4,18 @@
 // Start session if not already started
 function init_session() {
     if (session_status() === PHP_SESSION_NONE) {
-        // Relaxed session settings for debugging host conflicts
-        session_set_cookie_params([
-            'lifetime' => 0,
-            'path' => '/',
-            'domain' => '',
-            'secure' => false, // Temporarily false to check for SSL proxy issues
-            'httponly' => true,
-            'samesite' => 'Lax'
-        ]);
+        // Use the most compatible session settings for free hosting (InfinityFree/iFastNet)
+        // We avoid strict flags that might conflict with their security proxy
+        ini_set('session.cookie_httponly', 1);
+        ini_set('session.use_only_cookies', 1);
+        
         session_start();
     }
 
-    // Temporarily reduced security headers to prevent blocking host-level security scripts
+    // Keep headers minimal to avoid host firewall triggers
     if (!headers_sent()) {
         header("X-Content-Type-Options: nosniff");
         header("X-XSS-Protection: 1; mode=block");
-        // CSP and X-Frame-Options removed temporarily for debugging
     }
 }
 

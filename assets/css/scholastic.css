@@ -219,34 +219,14 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* 8. Mathematical Data Display */
-.stat-value, .progress-label-value, table tbody td:nth-child(n+2) {
+.stat-value, .progress-label-value {
     font-family: var(--font-mono) !important;
     letter-spacing: 0.08em !important;
     color: var(--secondary) !important;
     font-weight: 600 !important;
 }
 
-/* 9. Tables */
-table {
-    background: var(--bg-primary) !important;
-}
-
-table thead th {
-    font-family: var(--font-heading) !important;
-    color: var(--primary) !important;
-    border-bottom: 2px solid var(--border-color) !important;
-    text-transform: capitalize !important;
-    letter-spacing: normal !important;
-    font-size: 1.05rem !important;
-}
-
-table tbody tr {
-    transition: background-color 250ms var(--transition-scholastic) !important;
-}
-
-table tbody tr:hover {
-    background-color: var(--bg-secondary) !important;
-}
+/* 9. Tables (Removed for SaaS Redesign) */
 
 /* 10. Buttons */
 .btn {

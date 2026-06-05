@@ -476,20 +476,20 @@ require_once '../includes/header.php';
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button onclick='editBook(<?php echo json_encode($book, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)' class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <?php if ($is_assigned): ?>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this book?');">
-                                            <input type="hidden" name="action" value="revoke_assignment">
-                                            <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-user-slash"></i> Revoke Access
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span style="color: var(--text-secondary);">Use manual assignment above or a request approval.</span>
-                                    <?php endif; ?>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick='editBook(<?php echo json_encode($book, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)' class="btn btn-sm btn-outline" title="Edit Book">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <?php if ($is_assigned): ?>
+                                            <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this book?');">
+                                                <input type="hidden" name="action" value="revoke_assignment">
+                                                <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Revoke Access">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

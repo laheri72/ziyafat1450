@@ -81,20 +81,9 @@ require_once '../includes/header.php';
         overflow: hidden; /* Prevent child elements from pushing width */
     }
 
-    .table-container {
-        width: 100%;
-        background: #fff;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-    }
-
     /* Desktop Table Styles */
     @media (min-width: 769px) {
         .mobile-report-cards { display: none !important; }
-        .table-container { display: block !important; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; text-align: left; padding: 12px 15px; border-bottom: 2px solid var(--border-color); }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
     }
 
     /* Mobile Card Styles (Replaces Table) */

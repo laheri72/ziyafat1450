@@ -680,22 +680,111 @@ body {
     padding: var(--spacing-sm) 0;
 }
 
-/* Tables */
+/* Tables - SaaS Enterprise Redesign */
 .table-container {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    margin: var(--spacing-lg) 0;
+    margin: 1.5rem 0;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    max-width: 100%;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--bg-primary);
-    min-width: 600px; /* Reduced from 800px */
+    min-width: 800px;
+    font-family: 'Inter', sans-serif;
+    text-align: left;
+}
+
+table thead {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+table thead th {
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 150ms ease;
+}
+
+table tbody tr:last-child {
+    border-bottom: none;
+}
+
+table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+table tbody td {
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+    color: #374151;
+    vertical-align: middle;
+}
+
+/* Numeric Columns */
+table tbody td:nth-child(n+7):not(:last-child),
+table thead th:nth-child(n+7):not(:last-child) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+table tbody td strong {
+    color: #111827;
+    font-weight: 600;
+}
+
+/* Badges / Pills in Tables */
+table .badge,
+.table-container .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background-color: #f3f4f6;
+    color: #374151;
+    white-space: nowrap;
+}
+
+/* Compact Action Buttons */
+table .btn-action,
+.table-container .btn-sm,
+.table-container .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 150ms ease;
+}
+
+table .btn-action:hover,
+.table-container .btn-sm:hover,
+.table-container .btn-icon:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+    border-color: #d1d5db;
 }
 
 /* Responsive Table Pattern */

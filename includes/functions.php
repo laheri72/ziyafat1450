@@ -4,12 +4,20 @@
 // Start session if not already started
 function init_session() {
     if (session_status() === PHP_SESSION_NONE) {
-        // Set secure session cookie parameters
+        // Detect if the connection is secure (supporting proxies like Cloudflare)
+        $is_secure = false;
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+            $is_secure = true;
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $is_secure = true;
+        }
+
+        // Set session cookie parameters
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
             'domain' => '',
-            'secure' => true,
+            'secure' => $is_secure,
             'httponly' => true,
             'samesite' => 'Lax'
         ]);
@@ -17,12 +25,15 @@ function init_session() {
     }
 
     // Security Headers to prevent phishing/clickjacking
+    // Note: We keep these robust but ensure they don't conflict with host verification scripts
     if (!headers_sent()) {
-        header("X-Frame-Options: DENY");
+        header("X-Frame-Options: SAMEORIGIN"); // Changed from DENY to SAMEORIGIN for better compatibility
         header("X-Content-Type-Options: nosniff");
         header("X-XSS-Protection: 1; mode=block");
-        header("Referrer-Policy: strict-origin-when-cross-origin");
-        header("Content-Security-Policy: default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cdn.jsdelivr.net;");
+        header("Referrer-Policy: no-referrer-when-downgrade"); // More compatible referrer policy
+        
+        // Slightly relaxed CSP to ensure host-level security scripts (like iFastNet's AES) can run
+        header("Content-Security-Policy: default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://cdn.jsdelivr.net;");
     }
 }
 

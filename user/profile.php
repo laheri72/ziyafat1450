@@ -106,6 +106,7 @@ require_once '../includes/header.php';
         </div>
 
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
             <div class="form-group">
                 <label for="its_number"><i class="fas fa-id-card"></i> ITS Number</label>
                 <input type="text" id="its_number" class="form-control" value="<?php echo htmlspecialchars($user['its_number']); ?>" disabled>

@@ -98,7 +98,7 @@ function get_assigned_category() {
 // Redirect if not logged in
 function require_login() {
     if (!is_logged_in()) {
-        header('Location: ../index.php');
+        echo "<script>window.location.href = '../index.php';</script>";
         exit();
     }
 }
@@ -107,7 +107,7 @@ function require_login() {
 function require_admin() {
     require_login();
     if (!is_admin()) {
-        header('Location: ../user/index.php');
+        echo "<script>window.location.href = '../user/index.php';</script>";
         exit();
     }
 }

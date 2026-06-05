@@ -61,14 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['role'] = $user['role'];
                     $_SESSION['admin_type'] = isset($user['admin_type']) ? $user['admin_type'] : null;
 
-                    // Absolute path redirects are safer on some hosts
-                    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-                    
-                    if ($user['role'] === 'admin') {
-                        header('Location: ' . $base_url . '/admin/index.php');
-                    } else {
-                        header('Location: ' . $base_url . '/user/index.php');
-                    }
+                    // Use JS redirect for better compatibility with InfinityFree security system
+                    $redirect_url = ($user['role'] === 'admin') ? 'admin/index.php' : 'user/index.php';
+                    echo "<script>window.location.href = '$redirect_url';</script>";
                     exit();
                 } else {
                     $error = 'Invalid ITS number or password';
@@ -88,6 +83,18 @@ $page_title = 'Login';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?> – Ziyafat us Shukr</title>
+    
+    <!-- InfinityFree Verification Support Script -->
+    <script>
+        // Check if cookies are actually being accepted before user tries to log in
+        (function() {
+            document.cookie = "testcookie=1; path=/";
+            if (document.cookie.indexOf("testcookie") === -1) {
+                console.warn("Cookies appear to be disabled by the browser.");
+            }
+            document.cookie = "testcookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/";
+        })();
+    </script>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

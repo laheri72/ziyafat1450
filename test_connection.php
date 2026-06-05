@@ -1,0 +1,1 @@
+<?php echo "Connection Successful. If you see this, the redirection loop is NOT affecting this specific file."; ?>

@@ -261,26 +261,28 @@ require_once '../includes/header.php';
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button onclick="editDua(<?php echo htmlspecialchars(json_encode($dua)); ?>)" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <?php if ($dua['is_active']): ?>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this dua?');">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="<?php echo $dua['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-ban"></i> Deactivate
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form method="POST" style="display:inline;">
-                                            <input type="hidden" name="action" value="activate">
-                                            <input type="hidden" name="id" value="<?php echo $dua['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="fas fa-check"></i> Activate
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="editDua(<?php echo htmlspecialchars(json_encode($dua)); ?>)" class="btn btn-sm btn-primary" title="Edit Dua">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <?php if ($dua['is_active']): ?>
+                                            <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this dua?');">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="<?php echo $dua['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Deactivate Dua">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <form method="POST" style="display:inline;">
+                                                <input type="hidden" name="action" value="activate">
+                                                <input type="hidden" name="id" value="<?php echo $dua['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Activate Dua">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -346,26 +348,28 @@ require_once '../includes/header.php';
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button onclick="editMazar(<?php echo htmlspecialchars(json_encode($mazar)); ?>)" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <?php if ($mazar['is_active']): ?>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this Mazar? Existing entries will remain in reports.');">
-                                            <input type="hidden" name="action" value="deactivate_mazar">
-                                            <input type="hidden" name="id" value="<?php echo $mazar['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-ban"></i> Deactivate
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form method="POST" style="display:inline;">
-                                            <input type="hidden" name="action" value="activate_mazar">
-                                            <input type="hidden" name="id" value="<?php echo $mazar['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="fas fa-check"></i> Activate
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="editMazar(<?php echo htmlspecialchars(json_encode($mazar)); ?>)" class="btn btn-sm btn-primary" title="Edit Mazar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <?php if ($mazar['is_active']): ?>
+                                            <form method="POST" style="display:inline;" onsubmit="return confirm('Deactivate this Mazar? Existing entries will remain in reports.');">
+                                                <input type="hidden" name="action" value="deactivate_mazar">
+                                                <input type="hidden" name="id" value="<?php echo $mazar['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Deactivate Mazar">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <form method="POST" style="display:inline;">
+                                                <input type="hidden" name="action" value="activate_mazar">
+                                                <input type="hidden" name="id" value="<?php echo $mazar['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Activate Mazar">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

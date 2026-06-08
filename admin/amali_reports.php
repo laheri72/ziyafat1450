@@ -324,43 +324,7 @@ require_once '../includes/header.php';
             </div>
 </div>
 
-        <div class="card" id="bulkAssignCard" style="border-left: 5px solid var(--accent-purple); position: sticky; top: 10px; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <div class="card-header" style="background-color: #f5f3ff;">
-                <h3 style="color: var(--accent-purple);"><i class="fas fa-layer-group"></i> Bulk Assign Amali (<span id="selectedCount">0</span> users selected)</h3>
-            </div>
-            <div style="padding: 1rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
-                <?php
-                $all_items = $conn->query("SELECT id, dua_name, category FROM duas_master WHERE is_active = 1 ORDER BY category, display_order");
-                ?>
-                <div id="bulkHint" style="width: 100%; color: #6366f1; font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 500;">
-                    <i class="fas fa-info-circle"></i> <span id="hintText">Please scroll down and select users from the list below to begin.</span>
-                </div>
-                <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
-                    <label style="font-size: 0.75rem;">Select Amali Item</label>
-                    <select id="bulk_dua_id" class="form-control">
-                        <option value="">-- Select Item --</option>
-                        <?php while($item = $all_items->fetch_assoc()): ?>
-                            <option value="<?php echo $item['id']; ?>">[<?php echo ucfirst($item['category']); ?>] <?php echo htmlspecialchars($item['dua_name']); ?></option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-                <div class="form-group" style="width: 100px; margin-bottom: 0;">
-                    <label style="font-size: 0.75rem;">Count</label>
-                    <input type="number" id="bulk_count" class="form-control" value="1" min="1">
-                </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" class="btn btn-primary" onclick="submitBulkAmali()" id="bulkSubmitBtn" disabled>
-                        <i class="fas fa-check-double"></i> Assign
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" onclick="toggleVisibleSelection(true)" style="border: 1px solid var(--accent-purple); color: var(--accent-purple);">
-                        <i class="fas fa-check-square"></i> Select All Visible
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="clearBulkSelection()">
-                        <i class="fas fa-times"></i> Clear
-                    </button>
-                </div>
-            </div>
-        </div>        <!-- Overall Amali Progress -->
+        <!-- Overall Amali Progress -->
         <?php
         // Calculate overall progress
         $total_users = $overall_stats['total_users'];
@@ -577,6 +541,44 @@ require_once '../includes/header.php';
                     <?php endif; ?>
                 </div>
             </form>
+        </div>
+
+        <div class="card" id="bulkAssignCard" style="border-left: 5px solid var(--accent-purple); position: sticky; top: 10px; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div class="card-header" style="background-color: #f5f3ff;">
+                <h3 style="color: var(--accent-purple);"><i class="fas fa-layer-group"></i> Bulk Assign Amali (<span id="selectedCount">0</span> users selected)</h3>
+            </div>
+            <div style="padding: 1rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <?php
+                $all_items = $conn->query("SELECT id, dua_name, category FROM duas_master WHERE is_active = 1 ORDER BY category, display_order");
+                ?>
+                <div id="bulkHint" style="width: 100%; color: #6366f1; font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 500;">
+                    <i class="fas fa-info-circle"></i> <span id="hintText">Please scroll down and select users from the list below to begin.</span>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                    <label style="font-size: 0.75rem;">Select Amali Item</label>
+                    <select id="bulk_dua_id" class="form-control">
+                        <option value="">-- Select Item --</option>
+                        <?php while($item = $all_items->fetch_assoc()): ?>
+                            <option value="<?php echo $item['id']; ?>">[<?php echo ucfirst($item['category']); ?>] <?php echo htmlspecialchars($item['dua_name']); ?></option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+                <div class="form-group" style="width: 100px; margin-bottom: 0;">
+                    <label style="font-size: 0.75rem;">Count</label>
+                    <input type="number" id="bulk_count" class="form-control" value="1" min="1">
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-primary" onclick="submitBulkAmali()" id="bulkSubmitBtn" disabled>
+                        <i class="fas fa-check-double"></i> Assign
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" onclick="toggleVisibleSelection(true)" style="border: 1px solid var(--accent-purple); color: var(--accent-purple);">
+                        <i class="fas fa-check-square"></i> Select All Visible
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearBulkSelection()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -1438,17 +1440,43 @@ require_once '../includes/header.php';
     <!-- Export Options -->
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-download"></i> Export Options</h3>
+            <h3><i class="fas fa-file-export"></i> Advanced Report Generation</h3>
         </div>
-        <div class="action-buttons">
-            <button onclick="window.print()" class="btn btn-primary">
-                <i class="fas fa-print"></i> Print Report
-            </button>
+        <div style="padding: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
+                        <i class="fas fa-percentage"></i> Flag Progress Below (%)
+                    </label>
+                    <input type="number" id="report_threshold" class="form-control" value="3.7" step="0.1" min="0" max="100">
+                    <small style="color: #64748b;">Users below this % will be marked in red in the report.</small>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="generateAdvancedReport()" class="btn btn-primary" style="background-color: #0f172a; border-color: #0f172a;">
+                        <i class="fas fa-file-word"></i> Generate Word Report
+                    </button>
+                    <button onclick="window.print()" class="btn btn-outline-primary">
+                        <i class="fas fa-print"></i> Browser Print
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    function generateAdvancedReport() {
+        const threshold = document.getElementById('report_threshold').value;
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Pass current filters to the export script
+        const category = urlParams.get('filter_category') || '';
+        const classification = urlParams.get('filter_classification') || '';
+        
+        const exportUrl = `export_advanced_report.php?threshold=${threshold}&filter_category=${encodeURIComponent(category)}&filter_classification=${encodeURIComponent(classification)}`;
+        window.location.href = exportUrl;
+    }
+
     function performInstantSearch() {
         const input = document.getElementById('instantSearch');
         const filter = input.value.toLowerCase();

@@ -355,20 +355,22 @@ require_once '../includes/header.php';
                                 </td>
                                 <td><?php echo date('M d, Y H:i', strtotime($request['requested_at'])); ?></td>
                                 <td>
-                                    <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="action" value="approve_request">
-                                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this request and assign the book?');">
-                                            <i class="fas fa-check"></i> Approve
-                                        </button>
-                                    </form>
-                                    <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="action" value="reject_request">
-                                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this request?');">
-                                            <i class="fas fa-times"></i> Reject
-                                        </button>
-                                    </form>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="action" value="approve_request">
+                                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this request and assign the book?');" title="Approve Request">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="action" value="reject_request">
+                                            <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this request?');" title="Reject Request">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

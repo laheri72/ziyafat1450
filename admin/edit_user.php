@@ -112,6 +112,57 @@ require_once '../includes/header.php';
         <div class="alert alert-success"><?php echo $success; ?></div>
     <?php endif; ?>
 
+    <style>
+        .edit-user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .quick-entry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: var(--spacing-lg);
+        }
+        .quick-entry-card {
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .container-form { padding: 5px; }
+            .stat-card-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
+            .quick-entry-grid { 
+                grid-template-columns: 1fr !important; 
+                gap: 1rem !important; 
+                padding: 10px !important; 
+            }
+            .quick-entry-card { padding: 1rem !important; }
+            .admin-juz-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(35px, 1fr)) !important; 
+                gap: 4px !important; 
+            }
+            #historyModal > div { 
+                margin: 10px !important; 
+                width: 95% !important; 
+                max-height: 90vh; 
+                overflow-y: auto; 
+                padding: 15px !important; 
+            }
+            .action-buttons { flex-direction: column; }
+            .action-buttons .btn { width: 100%; margin-bottom: 0.5rem; }
+            .card-header { padding: 10px !important; flex-wrap: wrap !important; }
+            .card-header h3 { font-size: 0.95rem !important; }
+            .badge { font-size: 0.7rem !important; }
+        }
+        @media (max-width: 480px) {
+            .stat-card-grid { grid-template-columns: 1fr !important; }
+            .quick-entry-grid { padding: 8px !important; }
+        }
+    </style>
+
     <!-- User Activity Summary -->
     <div class="card">
         <div class="card-header">
@@ -149,7 +200,7 @@ require_once '../includes/header.php';
                 $dua_stats[$row['category']] = $row['count'];
             }
             ?>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="stat-card-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                 <div class="stat-card success">
                     <h4><i class="fas fa-quran"></i> Quran</h4>
                     <div class="stat-value"><?php echo $stats['completed_qurans']; ?> / 4</div>
@@ -186,15 +237,20 @@ require_once '../includes/header.php';
             <h3 style="color: #047857; margin: 0;"><i class="fas fa-bolt"></i> Quick Data Entry (Admin Override)</h3>
             <span class="badge badge-success">Amali Coordinator</span>
         </div>
-        <div style="padding: var(--spacing-lg); display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div class="quick-entry-grid">
             
             <!-- Quick Quran Entry -->
-            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; grid-column: 1 / -1;">
-                <h4 style="margin-top: 0; color: #0f172a; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span><i class="fas fa-quran text-success"></i> Mark Quran Juz (Multi-select)</span>
-                    <button type="button" class="btn btn-success btn-sm" onclick="submitQuickQuran(<?php echo $user_id; ?>)">
-                        <i class="fas fa-save"></i> Save Selected Juz
-                    </button>
+            <div class="quick-entry-card" style="background: #f8fafc; grid-column: 1 / -1;">
+                <h4 style="margin-top: 0; color: #0f172a; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-quran text-success"></i> Mark Quran Juz (Multi-select)
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 10px;">
+                        <a href="javascript:void(0)" onclick="viewHistory(<?php echo $user_id; ?>, 'quran', 'Quran Progress History')" class="text-muted" title="View History"><i class="fas fa-history"></i></a>
+                        <button type="button" class="btn btn-success btn-sm" onclick="submitQuickQuran(<?php echo $user_id; ?>)">
+                            <i class="fas fa-save"></i> Save Selected Juz
+                        </button>
+                    </span>
                 </h4>
                 
                 <style>
@@ -255,8 +311,11 @@ require_once '../includes/header.php';
             <?php
             $tasbeeh_list = $conn->query("SELECT id, dua_name FROM duas_master WHERE is_active = 1 AND category = 'tasbeeh' ORDER BY display_order");
             ?>
-            <div style="background: #fff7ed; padding: 1rem; border-radius: 8px; border: 1px solid #ffedd5;">
-                <h4 style="margin-top: 0; color: #9a3412; font-size: 1rem;"><i class="fas fa-dharmachakra text-warning"></i> Add Tasbeeh Count</h4>
+            <div class="quick-entry-card" style="background: #fff7ed; border-color: #ffedd5;">
+                <h4 style="margin-top: 0; color: #9a3412; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span><i class="fas fa-dharmachakra text-warning"></i> Add Tasbeeh Count</span>
+                    <a href="javascript:void(0)" onclick="viewHistory(<?php echo $user_id; ?>, 'tasbeeh', 'Tasbeeh History')" class="text-muted" title="View History"><i class="fas fa-history"></i></a>
+                </h4>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <select id="quick_tasbeeh_id" class="form-control" style="padding: 0.4rem; font-size: 0.85rem;">
                         <option value="">Select Tasbeeh...</option>
@@ -277,8 +336,11 @@ require_once '../includes/header.php';
             <?php
             $duas_list = $conn->query("SELECT id, dua_name, category FROM duas_master WHERE is_active = 1 AND category IN ('dua', 'namaz') ORDER BY category, display_order");
             ?>
-            <div style="background: #f5f3ff; padding: 1rem; border-radius: 8px; border: 1px solid #ddd6fe;">
-                <h4 style="margin-top: 0; color: #5b21b6; font-size: 1rem;"><i class="fas fa-hands-praying text-purple"></i> Add Dua/Namaz Count</h4>
+            <div class="quick-entry-card" style="background: #f5f3ff; border-color: #ddd6fe;">
+                <h4 style="margin-top: 0; color: #5b21b6; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span><i class="fas fa-hands-praying text-purple"></i> Add Dua/Namaz Count</span>
+                    <a href="javascript:void(0)" onclick="viewHistory(<?php echo $user_id; ?>, 'dua', 'Dua/Namaz History')" class="text-muted" title="View History"><i class="fas fa-history"></i></a>
+                </h4>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <select id="quick_dua_id" class="form-control" style="padding: 0.4rem; font-size: 0.85rem;">
                         <option value="">Select Dua/Namaz...</option>
@@ -299,8 +361,11 @@ require_once '../includes/header.php';
             <?php
             $mazars_list = get_active_mazars($conn);
             ?>
-            <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe;">
-                <h4 style="margin-top: 0; color: #1e40af; font-size: 1rem;"><i class="fas fa-kaaba"></i> Add Ziyarat Count</h4>
+            <div class="quick-entry-card" style="background: #eff6ff; border-color: #bfdbfe;">
+                <h4 style="margin-top: 0; color: #1e40af; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span><i class="fas fa-kaaba"></i> Add Ziyarat Count</span>
+                    <a href="javascript:void(0)" onclick="viewHistory(<?php echo $user_id; ?>, 'ziyarat', 'Ziyarat History')" class="text-muted" title="View History"><i class="fas fa-history"></i></a>
+                </h4>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <select id="quick_ziyarat_mazar_id" class="form-control" style="padding: 0.4rem; font-size: 0.85rem;">
                         <option value="">Select Mazar...</option>
@@ -321,8 +386,10 @@ require_once '../includes/header.php';
             <?php
             $books_list = $conn->query("SELECT bm.id, bm.book_name, bt.id as is_selected FROM books_master bm LEFT JOIN book_transcription bt ON bm.id = bt.book_id AND bt.user_id = $user_id WHERE bm.is_active = 1 ORDER BY bm.display_order");
             ?>
-            <div style="background: #fef2f2; padding: 1rem; border-radius: 8px; border: 1px solid #fee2e2;">
-                <h4 style="margin-top: 0; color: #7f1d1d; font-size: 1rem;"><i class="fas fa-book text-danger"></i> Update Book Progress</h4>
+            <div class="quick-entry-card" style="background: #fef2f2; border-color: #fee2e2;">
+                <h4 style="margin-top: 0; color: #7f1d1d; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span><i class="fas fa-book text-danger"></i> Update Book Progress</span>
+                </h4>
                 <div class="form-group" style="margin-bottom: 0.5rem;">
                     <select id="quick_book_id" class="form-control" style="padding: 0.4rem; font-size: 0.85rem;">
                         <option value="">Select Book...</option>
@@ -468,7 +535,123 @@ require_once '../includes/header.php';
 
     </div>
 
+    <!-- History Modal -->
+    <div id="historyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; overflow-y:auto;">
+        <div style="background:white; margin:30px auto; padding:20px; max-width:800px; border-radius:8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position:relative;">
+            <h3 id="historyModalTitle" style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">History</h3>
+            <button onclick="closeHistoryModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            
+            <div id="historyModalContent" style="margin-top:20px;">
+                <div style="text-align:center; padding:20px;">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i> Loading history...
+                </div>
+            </div>
+            
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="closeHistoryModal()" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+let currentHistoryCategory = '';
+let historyChanged = false;
+
+async function viewHistory(userId, category, title) {
+    currentHistoryCategory = category;
+    historyChanged = false;
+    document.getElementById('historyModalTitle').innerText = title;
+    document.getElementById('historyModalContent').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading history...</div>';
+    document.getElementById('historyModal').style.display = 'block';
+    
+    try {
+        const response = await fetch(`ajax_manage_history.php?action=get_history&user_id=${userId}&category=${category}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            renderHistory(data.history, category);
+        } else {
+            document.getElementById('historyModalContent').innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+        }
+    } catch (e) {
+        document.getElementById('historyModalContent').innerHTML = '<div class="alert alert-error">Failed to load history.</div>';
+    }
+}
+
+function renderHistory(history, category) {
+    if (history.length === 0) {
+        document.getElementById('historyModalContent').innerHTML = '<p style="text-align:center; padding:20px;">No records found.</p>';
+        return;
+    }
+    
+    let html = '<div class="table-container"><table><thead><tr>';
+    html += '<th>Item</th>';
+    if (category !== 'quran') html += '<th>Count</th>';
+    html += '<th>Date</th><th>Recorded On</th><th>Actions</th></tr></thead><tbody>';
+    
+    history.forEach(entry => {
+        html += `<tr>
+            <td>${entry.label}</td>
+            ${category !== 'quran' ? `<td><strong>${entry.count}</strong></td>` : ''}
+            <td>${entry.date}</td>
+            <td style="font-size:0.8rem; color:#666;">${entry.recorded_on}</td>
+            <td>
+                <button onclick="deleteHistoryEntry(${entry.id}, '${category}')" class="btn btn-sm btn-danger" title="Delete Entry">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table></div>';
+    document.getElementById('historyModalContent').innerHTML = html;
+}
+
+async function deleteHistoryEntry(entryId, category) {
+    if (!confirm('Are you sure you want to delete this entry? This action cannot be undone.')) return;
+    
+    const formData = new FormData();
+    formData.append('action', 'delete_entry');
+    formData.append('entry_id', entryId);
+    formData.append('category', category);
+    
+    try {
+        const response = await fetch('ajax_manage_history.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(data.message, 'success');
+            historyChanged = true;
+            // Refresh history
+            const userId = <?php echo $user_id; ?>;
+            const title = document.getElementById('historyModalTitle').innerText;
+            viewHistory(userId, category, title);
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (e) {
+        showToast('Network error occurred.', 'error');
+    }
+}
+
+function closeHistoryModal() {
+    document.getElementById('historyModal').style.display = 'none';
+    if (historyChanged) {
+        location.reload();
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('historyModal');
+    if (event.target == modal) {
+        closeHistoryModal();
+    }
+}
+
 async function submitQuickQuran(userId) {
     const selectedItems = document.querySelectorAll('.admin-juz-item.selected');
     if (selectedItems.length === 0) return showToast('Please select at least one Juz.', 'error');

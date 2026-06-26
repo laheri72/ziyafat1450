@@ -168,6 +168,110 @@ init_session();
                 margin-right: 1rem;
             }
         }
+
+        /* User Dropdown Styles */
+        .topbar-user {
+            position: relative;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: var(--radius-md);
+            transition: background-color var(--transition-fast);
+            user-select: none;
+        }
+        .topbar-user:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .topbar-user.active {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid #e2e8f0;
+            margin-top: 10px;
+            display: none;
+            z-index: 1001;
+            overflow: hidden;
+            animation: userSlideDown 0.2s ease-out;
+        }
+        .user-dropdown.show {
+            display: block;
+        }
+        @keyframes userSlideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-dropdown-header {
+            padding: 12px 16px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+        .user-dropdown-header strong {
+            font-size: 0.9rem;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .user-dropdown-header span {
+            font-size: 0.75rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .user-dropdown-divider {
+            height: 1px;
+            background-color: #e2e8f0;
+        }
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+            text-align: left;
+        }
+        .user-dropdown-item:hover {
+            background-color: #f1f5f9;
+            color: var(--primary-600);
+            padding-left: 20px;
+        }
+        .user-dropdown-item i {
+            width: 16px;
+            color: #64748b;
+            transition: color var(--transition-fast);
+        }
+        .user-dropdown-item:hover i {
+            color: var(--primary-600);
+        }
+        .user-dropdown-item.logout-item {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .user-dropdown-item.logout-item:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+        .user-dropdown-item.logout-item i {
+            color: #f87171;
+        }
+        .user-dropdown-item.logout-item:hover i {
+            color: #dc2626;
+        }
     </style>
 </head>
 
@@ -261,6 +365,12 @@ init_session();
                                     <a href="../admin/amali_reports.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'amali_reports.php' ? 'active' : ''; ?>">
                                         <i class="fas fa-chart-bar"></i>
                                         <span>Amali Reports</span>
+                                    </a>
+                                </div>
+                                <div class="nav-item">
+                                    <a href="../admin/advanced_reports.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'advanced_reports.php' ? 'active' : ''; ?>">
+                                        <i class="fas fa-file-invoice"></i>
+                                        <span>Advanced Reports</span>
                                     </a>
                                 </div>
                                 <div class="nav-item">
@@ -442,6 +552,19 @@ init_session();
                                 <h4><?php echo htmlspecialchars($logged_in_user['name']); ?></h4>
                                 <p><?php echo is_admin() ? 'Administrator' : 'User'; ?></p>
                             </div>
+                            <div class="user-dropdown" id="userDropdown">
+                                <div class="user-dropdown-header">
+                                    <strong><?php echo htmlspecialchars($logged_in_user['name']); ?></strong>
+                                    <span>ITS: <?php echo htmlspecialchars($logged_in_user['its_number']); ?></span>
+                                </div>
+                                <div class="user-dropdown-divider"></div>
+                                <a href="../user/profile.php" class="user-dropdown-item">
+                                    <i class="fas fa-user"></i> My Profile
+                                </a>
+                                <a href="../auth/logout.php" class="user-dropdown-item logout-item">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -486,19 +609,45 @@ init_session();
                     document.addEventListener('DOMContentLoaded', function() {
                         const notifToggle = document.getElementById('notifToggle');
                         const notifMenu = document.getElementById('notifMenu');
+                        const topbarUser = document.querySelector('.topbar-user');
+                        const userDropdown = document.getElementById('userDropdown');
 
+                        // Admin Notification Toggle
                         if (notifToggle && notifMenu) {
                             notifToggle.addEventListener('click', function(e) {
                                 e.stopPropagation();
                                 notifMenu.classList.toggle('show');
+                                if (userDropdown) {
+                                    userDropdown.classList.remove('show');
+                                    topbarUser.classList.remove('active');
+                                }
                             });
+                        }
 
-                            document.addEventListener('click', function(e) {
-                                if (!notifMenu.contains(e.target) && !notifToggle.contains(e.target)) {
+                        // User Dropdown Toggle
+                        if (topbarUser && userDropdown) {
+                            topbarUser.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                userDropdown.classList.toggle('show');
+                                topbarUser.classList.toggle('active');
+                                if (notifMenu) {
                                     notifMenu.classList.remove('show');
                                 }
                             });
                         }
+
+                        // Global Click Dismissal
+                        document.addEventListener('click', function(e) {
+                            // Close notifications
+                            if (notifMenu && notifToggle && !notifMenu.contains(e.target) && !notifToggle.contains(e.target)) {
+                                notifMenu.classList.remove('show');
+                            }
+                            // Close user dropdown
+                            if (userDropdown && topbarUser && !topbarUser.contains(e.target)) {
+                                userDropdown.classList.remove('show');
+                                topbarUser.classList.remove('active');
+                            }
+                        });
                     });
                 </script>
     <?php else: ?>

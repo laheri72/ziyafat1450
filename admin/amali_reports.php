@@ -1437,27 +1437,35 @@ require_once '../includes/header.php';
         </div>
     <?php endif; ?>
 
-    <!-- Export Options -->
-    <div class="card">
-        <div class="card-header">
-            <h3><i class="fas fa-file-export"></i> Advanced Report Generation</h3>
+    <!-- Advanced Export Options -->
+    <div class="card" style="border-left: 5px solid var(--primary-500); margin-top: 25px;">
+        <div class="card-header" style="background-color: var(--primary-50);">
+            <h3 style="color: var(--primary-800);"><i class="fas fa-chart-line"></i> Enterprise Advanced Report Console</h3>
         </div>
-        <div style="padding: 1rem;">
-            <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
-                <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
-                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
-                        <i class="fas fa-percentage"></i> Flag Progress Below (%)
-                    </label>
-                    <input type="number" id="report_threshold" class="form-control" value="3.7" step="0.1" min="0" max="100">
-                    <small style="color: #64748b;">Users below this % will be marked in red in the report.</small>
+        <div style="padding: var(--spacing-lg);">
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                <div style="flex: 1; min-width: 280px;">
+                    <p style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        Our new <strong>Enterprise Advanced Report Generator</strong> allows you to filter branch-wise metrics, isolate specific or multiple Duas/Tasbeehs/Namaz/Kutub/Mazars, and render customized progress matrices live on the screen without needing to download files repeatedly.
+                    </p>
+                    <small style="color: #64748b;">Includes instant flagging thresholds, browser-optimized printing, and direct export to Excel.</small>
                 </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="generateAdvancedReport()" class="btn btn-primary" style="background-color: #0f172a; border-color: #0f172a;">
-                        <i class="fas fa-file-word"></i> Generate Word Report
-                    </button>
-                    <button onclick="window.print()" class="btn btn-outline-primary">
-                        <i class="fas fa-print"></i> Browser Print
-                    </button>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <a href="advanced_reports.php" class="btn btn-success" style="background-color: var(--success); border-color: var(--success); padding: 0.75rem 1.5rem; font-weight: 600;">
+                        <i class="fas fa-chart-pie"></i> Open Report Generator
+                    </a>
+                    
+                    <div style="border-left: 1px solid var(--border-color); height: 40px; margin: 0 10px; display: inline-block;"></div>
+                    
+                    <!-- Quick Word report generator from before -->
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <input type="number" id="report_threshold" class="form-control" value="3.7" step="0.1" min="0" max="100" style="width: 80px; height: 36px; padding: 4px 8px;">
+                            <button onclick="generateAdvancedReport()" class="btn btn-primary" style="background-color: #0f172a; border-color: #0f172a; height: 36px; padding: 0 12px; font-size: 0.85rem;">
+                                <i class="fas fa-file-word"></i> Word Report
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

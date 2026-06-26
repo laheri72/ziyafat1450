@@ -206,12 +206,259 @@ require_once '../includes/header.php';
     .stat-card {
         border: 1px solid #243b53 !important;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+        transition: all var(--transition-base) !important;
     }
     
     .stat-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
         border-color: var(--primary-500) !important;
+    }
+
+    /* Clickable Stat Cards */
+    .clickable-stat-card {
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .clickable-stat-card:hover {
+        transform: translateY(-5px) scale(1.02) !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18) !important;
+    }
+    
+    .clickable-stat-card::after {
+        content: '\f05a'; /* FontAwesome info-circle icon */
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        bottom: 10px;
+        right: 12px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        opacity: 0.35;
+        transition: opacity var(--transition-fast);
+    }
+    
+    .clickable-stat-card:hover::after {
+        opacity: 0.9;
+    }
+
+    /* Responsive Modal Styles */
+    .dashboard-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        transition: opacity 0.3s ease;
+    }
+    
+    .dashboard-modal-content {
+        background-color: var(--bg-secondary);
+        margin: 8% auto;
+        padding: 0;
+        border: 1px solid var(--border-color);
+        width: 90%;
+        max-width: 650px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-2xl);
+        animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+    }
+    
+    @keyframes modalScaleUp {
+        from {
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .dashboard-modal-header {
+        padding: var(--spacing-lg);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .modal-header-dua {
+        background: linear-gradient(135deg, #DAA520, #b8860b);
+    }
+    
+    .modal-header-tasbeeh {
+        background: linear-gradient(135deg, #4682B4, #2e597d);
+    }
+    
+    .modal-header-namaz {
+        background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    }
+    
+    .modal-header-ziyarat {
+        background: linear-gradient(135deg, #22c55e, #15803d);
+    }
+    
+    .dashboard-modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .dashboard-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.75rem;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-full);
+    }
+    
+    .dashboard-modal-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .dashboard-modal-body {
+        padding: var(--spacing-lg);
+        max-height: 60vh;
+        overflow-y: auto;
+        background-color: var(--bg-secondary);
+    }
+    
+    .dashboard-modal-subheader {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-lg);
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: var(--spacing-sm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-list-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-md) 0;
+        border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+    }
+    
+    .modal-list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .modal-item-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+    
+    .modal-item-name-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .modal-item-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary-800);
+    }
+    
+    .modal-item-name-arabic {
+        font-family: 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+        font-size: 1.15rem;
+        color: var(--secondary-700);
+        margin-top: 2px;
+    }
+    
+    .modal-item-stats {
+        text-align: right;
+        flex-shrink: 0;
+    }
+    
+    .modal-item-count {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--primary-700);
+    }
+    
+    .modal-item-pct {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-left: 6px;
+    }
+    
+    .modal-progress-bar {
+        height: 10px;
+        background-color: rgba(0, 0, 0, 0.06);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        margin-top: 6px;
+        border: 1px solid rgba(218, 165, 32, 0.1);
+    }
+    
+    .modal-progress-fill {
+        height: 100%;
+        border-radius: var(--radius-full);
+        transition: width 0.5s ease-out;
+    }
+    
+    .dua-fill {
+        background: linear-gradient(90deg, #DAA520, #f59e0b) !important;
+    }
+    
+    .tasbeeh-fill {
+        background: linear-gradient(90deg, #4682B4, #3b82f6) !important;
+    }
+    
+    .namaz-fill {
+        background: linear-gradient(90deg, #7c3aed, #a855f7) !important;
+    }
+    
+    .modal-loader {
+        text-align: center;
+        padding: var(--spacing-2xl) 0;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .modal-loader i {
+        font-size: 2rem;
+        animation: spin 1s linear infinite;
+        color: var(--primary-500);
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 
@@ -314,7 +561,7 @@ require_once '../includes/header.php';
                 <div class="stat-label"><?php echo $amali_stats['total_juz_completed']; ?> Juz Total</div>
             </div>
 
-            <div class="stat-card warning">
+            <div class="stat-card warning clickable-stat-card" data-type="dua">
                 <div class="stat-card-header">
                     <h4>Duas Recited</h4>
                     <div class="stat-icon">
@@ -325,7 +572,7 @@ require_once '../includes/header.php';
                 <div class="stat-label">Duas</div>
             </div>
 
-            <div class="stat-card info">
+            <div class="stat-card info clickable-stat-card" data-type="tasbeeh">
                 <div class="stat-card-header">
                     <h4>Tasbeeh</h4>
                     <div class="stat-icon">
@@ -336,7 +583,7 @@ require_once '../includes/header.php';
                 <div class="stat-label">Tasbeeh Count</div>
             </div>
 
-            <div class="stat-card purple">
+            <div class="stat-card purple clickable-stat-card" data-type="namaz">
                 <div class="stat-card-header">
                     <h4>Namaz</h4>
                     <div class="stat-icon">
@@ -347,7 +594,7 @@ require_once '../includes/header.php';
                 <div class="stat-label">Namaz Count</div>
             </div>
 
-            <div class="stat-card info">
+            <div class="stat-card info clickable-stat-card" data-type="ziyarat">
                 <div class="stat-card-header">
                     <h4>Ziyarat</h4>
                     <div class="stat-icon">
@@ -515,5 +762,173 @@ require_once '../includes/header.php';
         </div>
     <?php endif; ?>
 </div>
+
+<!-- Dynamic Stats Detail Modal -->
+<div id="statsDetailModal" class="dashboard-modal">
+    <div class="dashboard-modal-content">
+        <div id="modalHeader" class="dashboard-modal-header">
+            <h3 class="dashboard-modal-title">
+                <i id="modalIcon" class="fas"></i> 
+                <span id="modalTitleText">Details</span>
+            </h3>
+            <button type="button" class="dashboard-modal-close" onclick="closeStatsModal()">&times;</button>
+        </div>
+        <div class="dashboard-modal-body">
+            <div class="dashboard-modal-subheader">
+                <span id="modalSubScope">Scope: Global</span>
+                <span id="modalSubUsers" class="badge" style="background-color: var(--primary-50); color: var(--primary-700); font-weight: 600;">0 Users</span>
+            </div>
+            <div id="modalContentList">
+                <!-- Dynamically loaded content goes here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openStatsModal(type) {
+    const modal = document.getElementById('statsDetailModal');
+    const header = document.getElementById('modalHeader');
+    const icon = document.getElementById('modalIcon');
+    const titleText = document.getElementById('modalTitleText');
+    const contentList = document.getElementById('modalContentList');
+    const subScope = document.getElementById('modalSubScope');
+    const subUsers = document.getElementById('modalSubUsers');
+    
+    // Reset classes
+    header.className = 'dashboard-modal-header';
+    let headerClass = '';
+    let title = '';
+    let iconClass = '';
+    
+    if (type === 'dua') {
+        headerClass = 'modal-header-dua';
+        title = 'Dua Recitation Progress';
+        iconClass = 'fa-hands-praying';
+    } else if (type === 'tasbeeh') {
+        headerClass = 'modal-header-tasbeeh';
+        title = 'Tasbeeh Progress';
+        iconClass = 'fa-dharmachakra';
+    } else if (type === 'namaz') {
+        headerClass = 'modal-header-namaz';
+        title = 'Namaz Progress';
+        iconClass = 'fa-mosque';
+    } else if (type === 'ziyarat') {
+        headerClass = 'modal-header-ziyarat';
+        title = 'Ziyarat Visits';
+        iconClass = 'fa-kaaba';
+    }
+    
+    header.classList.add(headerClass);
+    titleText.textContent = title;
+    icon.className = `fas ${iconClass}`;
+    
+    contentList.innerHTML = `
+        <div class="modal-loader">
+            <i class="fas fa-spinner"></i>
+            <span>Fetching latest details...</span>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    fetch(`ajax_dashboard_details.php?type=${type}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                contentList.innerHTML = `<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ${data.message}</div>`;
+                return;
+            }
+            
+            subScope.textContent = `Scope: ${data.branch} Branch`;
+            subUsers.textContent = `${data.total_users} Active ${data.total_users === 1 ? 'User' : 'Users'}`;
+            
+            if (data.items.length === 0) {
+                contentList.innerHTML = `<p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-xl) 0;">No active items found in this category.</p>`;
+                return;
+            }
+            
+            let html = '';
+            data.items.forEach(item => {
+                if (type === 'ziyarat') {
+                    html += `
+                        <div class="modal-list-item">
+                            <div class="modal-item-info">
+                                <div class="modal-item-name-container">
+                                    <span class="modal-item-name">${item.name}</span>
+                                </div>
+                                <div class="modal-item-stats">
+                                    <span class="badge" style="background-color: var(--secondary-50); color: var(--secondary-700); font-size: 0.9rem; padding: 6px 12px; font-weight: 700; border-radius: var(--radius-md); border: 1px solid rgba(80, 200, 120, 0.2);">
+                                        ${item.completed.toLocaleString()} ${item.completed === 1 ? 'visit' : 'visits'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const arabicSpan = item.name_arabic ? `<span class="modal-item-name-arabic">${item.name_arabic}</span>` : '';
+                    const progressFillStyle = `width: ${Math.min(item.percentage, 100)}%;`;
+                    let progressFillColorClass = '';
+                    if (type === 'dua') progressFillColorClass = 'dua-fill';
+                    else if (type === 'tasbeeh') progressFillColorClass = 'tasbeeh-fill';
+                    else if (type === 'namaz') progressFillColorClass = 'namaz-fill';
+                    
+                    html += `
+                        <div class="modal-list-item">
+                            <div class="modal-item-info">
+                                <div class="modal-item-name-container">
+                                    <span class="modal-item-name">${item.name}</span>
+                                    ${arabicSpan}
+                                </div>
+                                <div class="modal-item-stats">
+                                    <span class="modal-item-count">${item.completed.toLocaleString()} / ${item.target_total.toLocaleString()}</span>
+                                    <span class="modal-item-pct">${item.percentage}%</span>
+                                </div>
+                            </div>
+                            <div class="modal-progress-bar">
+                                <div class="modal-progress-fill ${progressFillColorClass}" style="${progressFillStyle}"></div>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; text-align: right;">
+                                Target: ${item.target_single} per user
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            contentList.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error fetching dashboard details:', error);
+            contentList.innerHTML = `<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Failed to load details. Please try again.</div>`;
+        });
+}
+
+function closeStatsModal() {
+    const modal = document.getElementById('statsDetailModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('statsDetailModal');
+    if (event.target === modal) {
+        closeStatsModal();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const clickableCards = document.querySelectorAll('.clickable-stat-card');
+    clickableCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            if (type) {
+                openStatsModal(type);
+            }
+        });
+    });
+});
+</script>
 
 <?php require_once '../includes/footer.php'; ?>

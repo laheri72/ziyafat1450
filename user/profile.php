@@ -19,31 +19,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Invalid security token. Please try again.';
     } else {
         $name = clean_input($_POST['name']);
-    $email = clean_input($_POST['email']);
-    $tr_number = clean_input($_POST['tr_number']);
-    $category = clean_input($_POST['category']);
-    $phone_number = clean_input($_POST['phone_number']);
-    $current_password = $_POST['current_password'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
+        $email = clean_input($_POST['email']);
+        $tr_number = clean_input($_POST['tr_number']);
+        $phone_number = clean_input($_POST['phone_number']);
+        $current_password = $_POST['current_password'];
+        $new_password = $_POST['new_password'];
+        $confirm_password = $_POST['confirm_password'];
 
-    if (empty($name) || empty($email)) {
-        $error = 'Name and email are required';
-    } else {
-        // Check if email is already taken by another user
-        $sql = "SELECT id FROM users WHERE email = ? AND id != ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("si", $email, $_SESSION['user_id']);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $error = 'Email is already taken';
+        if (empty($name) || empty($email)) {
+            $error = 'Name and email are required';
         } else {
-            // Update basic info
-            $sql = "UPDATE users SET name = ?, email = ?, tr_number = ?, category = ?, phone_number = ? WHERE id = ?";
+            // Check if email is already taken by another user
+            $sql = "SELECT id FROM users WHERE email = ? AND id != ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssi", $name, $email, $tr_number, $category, $phone_number, $_SESSION['user_id']);
+            $stmt->bind_param("si", $email, $_SESSION['user_id']);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $error = 'Email is already taken';
+            } else {
+                // Update basic info (Jamea/category and ITS number are locked)
+                $sql = "UPDATE users SET name = ?, email = ?, tr_number = ?, phone_number = ? WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ssssi", $name, $email, $tr_number, $phone_number, $_SESSION['user_id']);
 
             if ($stmt->execute()) {
                 $_SESSION['name'] = $name;
@@ -120,13 +119,8 @@ require_once '../includes/header.php';
 
             <div class="form-group">
                 <label for="category"><i class="fas fa-mosque"></i> Jamea</label>
-                <select id="category" name="category" class="form-control">
-                    <option value="">-- Select Jamea --</option>
-                    <option value="Surat" <?php echo ($user['category'] === 'Surat') ? 'selected' : ''; ?>>Surat</option>
-                    <option value="Marol" <?php echo ($user['category'] === 'Marol') ? 'selected' : ''; ?>>Marol</option>
-                    <option value="Karachi" <?php echo ($user['category'] === 'Karachi') ? 'selected' : ''; ?>>Karachi</option>
-                    <option value="Nairobi" <?php echo ($user['category'] === 'Nairobi') ? 'selected' : ''; ?>>Nairobi</option>
-                </select>
+                <input type="text" id="category" class="form-control" value="<?php echo htmlspecialchars($user['category'] ?: 'Not assigned'); ?>" disabled>
+                <small>Jamea cannot be changed. contact Admin</small>
             </div>
 
             <div class="form-group">

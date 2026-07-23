@@ -16,7 +16,8 @@ if (!in_array($type, $valid_types)) {
 }
 
 // Determine coordinator and category/branch scope
-$is_category_coordinator = is_category_amali_coordinator();
+$is_super = is_super_admin();
+$is_category_coordinator = !$is_super;
 $assigned_category = get_assigned_category();
 
 // Build database filters matching admin/index.php logic

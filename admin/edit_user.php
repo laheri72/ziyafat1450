@@ -31,6 +31,15 @@ if (!$user) {
     exit();
 }
 
+// Branch restriction check for non-super admins
+if (!is_super_admin()) {
+    $assigned_category = get_assigned_category();
+    if ($assigned_category && $user['category'] !== $assigned_category) {
+        header('Location: view_users.php');
+        exit();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['reset_password'])) {
         if (is_super_admin()) {
@@ -47,13 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $error = 'User does not have a TR Number. Password cannot be reset to TR Number.';
             }
-        } else {
-            $error = 'Only Super Admins can reset passwords.';
         }
     } else {
         $its_number = clean_input($_POST['its_number']);
         $tr_number = clean_input($_POST['tr_number']);
-        $category = clean_input($_POST['category']);
+        $category = is_super_admin() ? clean_input($_POST['category']) : $user['category'];
         $classification = clean_input($_POST['classification']);
         $name = clean_input($_POST['name']);
         $email = clean_input($_POST['email']);
@@ -444,7 +451,7 @@ require_once '../includes/header.php';
 
             <div class="form-group">
                 <label for="category"><i class="fas fa-map-marker-alt"></i> Jamea (Branch)</label>
-                <select id="category" name="category" class="form-control">
+                <select id="category" name="category" class="form-control" <?php echo !is_super_admin() ? 'disabled' : ''; ?>>
                     <option value="">-- Select Jamea --</option>
                     <option value="Surat" <?php echo $user['category'] === 'Surat' ? 'selected' : ''; ?>>Surat</option>
                     <option value="Marol" <?php echo $user['category'] === 'Marol' ? 'selected' : ''; ?>>Marol</option>
@@ -452,6 +459,9 @@ require_once '../includes/header.php';
                     <option value="Nairobi" <?php echo $user['category'] === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
                     <option value="Muntasib" <?php echo $user['category'] === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                 </select>
+                <?php if (!is_super_admin()): ?>
+                    <small>Only Super Admin can change Jamea</small>
+                <?php endif; ?>
             </div>
 
             <div class="form-group">
@@ -505,24 +515,8 @@ require_once '../includes/header.php';
                 </select>
             </div>
 
-            <?php if (is_super_admin()): ?>
-                <div class="alert alert-warning" style="margin: 20px 0; border-left: 5px solid #f59e0b;">
-                    <h4 style="margin-top: 0; color: #92400e;"><i class="fas fa-user-shield"></i> Super Admin: Password Reset</h4>
-                    <p style="margin-bottom: 15px;">You can reset this user's password to their <strong>TR Number (<?php echo htmlspecialchars($user['tr_number'] ?: 'Not Set'); ?>)</strong> if they have forgotten it.</p>
-                    <form method="POST" action="" onsubmit="return confirm('Are you sure you want to reset the password to the TR Number?');">
-                        <button type="submit" name="reset_password" class="btn btn-warning" <?php echo empty($user['tr_number']) ? 'disabled' : ''; ?>>
-                            <i class="fas fa-sync-alt"></i> Reset Password to TR Number
-                        </button>
-                    </form>
-                </div>
-            <?php else: ?>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> <strong>Note:</strong> Password cannot be changed from this page. User can change their password from their profile page.
-                </div>
-            <?php endif; ?>
-
-            <div class="action-buttons">
-                <button type="submit" class="btn btn-primary">
+            <div class="action-buttons" style="margin-top: 1.5rem;">
+                <button type="submit" name="update_user_details" class="btn btn-primary">
                     <i class="fas fa-save"></i> Update User Details
                 </button>
                
@@ -532,6 +526,22 @@ require_once '../includes/header.php';
             </div>
         </form>
     </div>
+
+    <?php if (is_super_admin()): ?>
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header" style="background: #fffbeb; border-bottom: 1px solid #fef3c7;">
+                <h3 style="color: #92400e;"><i class="fas fa-user-shield"></i> Super Admin: Password Reset</h3>
+            </div>
+            <div style="padding: var(--spacing-lg);">
+                <p style="margin-bottom: 15px; color: #4b5563;">You can reset this user's password to their <strong>TR Number (<?php echo htmlspecialchars($user['tr_number'] ?: 'Not Set'); ?>)</strong> if they have forgotten it.</p>
+                <form method="POST" action="" onsubmit="return confirm('Are you sure you want to reset the password to the TR Number?');">
+                    <button type="submit" name="reset_password" class="btn btn-warning" <?php echo empty($user['tr_number']) ? 'disabled' : ''; ?>>
+                        <i class="fas fa-sync-alt"></i> Reset Password to TR Number
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
 
     </div>
 

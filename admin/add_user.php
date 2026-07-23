@@ -4,8 +4,8 @@ require_once '../includes/functions.php';
 
 require_admin();
 
-if (!(is_super_admin() || is_amali_coordinator())) {
-    header('Location: index.php');
+if (!is_super_admin()) {
+    header('Location: view_users.php');
     exit();
 }
 

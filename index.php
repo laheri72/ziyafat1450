@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['its_number'] = $user['its_number'];
                     $_SESSION['role'] = $user['role'];
                     $_SESSION['admin_type'] = isset($user['admin_type']) ? $user['admin_type'] : null;
+                    $_SESSION['category'] = isset($user['category']) ? $user['category'] : null;
 
                     // Use JS redirect for better compatibility with InfinityFree security system
                     $redirect_url = ($user['role'] === 'admin') ? 'admin/index.php' : 'user/index.php';

@@ -13,7 +13,8 @@ $is_amali_admin = has_amali_access();
 
 // Amali-related data (only for amali coordinators)
 if ($is_amali_admin) {
-    $is_category_coordinator = is_category_amali_coordinator();
+    $is_super = is_super_admin();
+    $is_category_coordinator = !$is_super;
     $assigned_category = get_assigned_category();
     
     // For user counting: Include both users and admins who participate

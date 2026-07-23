@@ -10,11 +10,12 @@ if (!has_amali_access()) {
 }
 
 // 1. Get parameters and handle branch constraints
-$is_category_coordinator = is_category_amali_coordinator();
+$is_super = is_super_admin();
+$is_category_coordinator = !$is_super;
 $assigned_category = get_assigned_category();
 
 $selected_branch = isset($_GET['branch']) ? clean_input($_GET['branch']) : '';
-if ($is_category_coordinator && $assigned_category) {
+if (!$is_super && $assigned_category) {
     // Branch coordinator is strictly locked to their branch
     $selected_branch = $assigned_category;
 }

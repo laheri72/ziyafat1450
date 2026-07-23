@@ -12,15 +12,15 @@ $js_path = '../assets/js/';
 $filter_category = isset($_GET['filter_category']) ? clean_input($_GET['filter_category']) : '';
 
 // Check admin type and set category restrictions
-$is_category_coordinator = is_category_amali_coordinator();
+$is_super = is_super_admin();
 $assigned_category = get_assigned_category();
 
-// If category amali coordinator, force filter to their assigned category
-if ($is_category_coordinator && $assigned_category) {
-    $filter_category = $assigned_category;
+// If not super admin (i.e. Amali Coordinator), force filter strictly to their assigned category
+if (!$is_super) {
+    $filter_category = $assigned_category ? $assigned_category : '';
 }
 
-// Get all users
+// Get users
 $sql = "SELECT 
             u.id,
             u.its_number,
@@ -61,17 +61,25 @@ require_once '../includes/header.php';
             <h3><i class="fas fa-filter"></i> Filter Users</h3>
         </div>
         <form method="GET" action="" style="padding: var(--spacing-lg);">
+            <?php if (!$is_super): ?>
+                <input type="hidden" name="filter_category" value="<?php echo htmlspecialchars($filter_category); ?>">
+            <?php endif; ?>
             <div class="form-group" style="margin-bottom: var(--spacing-md);">
                 <label for="filter_category"><i class="fas fa-mosque"></i> Filter by Jamea</label>
-                <select id="filter_category" name="filter_category" class="form-control">
-                    <option value="">All Jamea</option>
-                    <option value="Surat" <?php echo $filter_category === 'Surat' ? 'selected' : ''; ?>>Surat</option>
-                    <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
-                    <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
-                    <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                    <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
+                <select id="filter_category" name="filter_category" class="form-control" <?php echo !$is_super ? 'disabled' : ''; ?>>
+                    <?php if ($is_super): ?>
+                        <option value="">All Jamea</option>
+                        <option value="Surat" <?php echo $filter_category === 'Surat' ? 'selected' : ''; ?>>Surat</option>
+                        <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
+                        <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
+                        <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
+                        <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
+                    <?php else: ?>
+                        <option value="<?php echo htmlspecialchars($filter_category); ?>" selected><?php echo htmlspecialchars($filter_category ?: 'Assigned Branch'); ?></option>
+                    <?php endif; ?>
                 </select>
             </div>
+            <?php if ($is_super): ?>
             <div class="action-buttons">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-filter"></i> Apply Filter
@@ -82,6 +90,7 @@ require_once '../includes/header.php';
                     </a>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
         </form>
     </div>
 
@@ -94,7 +103,7 @@ require_once '../includes/header.php';
                     <button onclick="exportTableToCSV('dataTable', 'users.csv')" class="btn btn-success btn-sm">
                         <i class="fas fa-download"></i> Export CSV
                     </button>
-                    <?php if (is_admin()): ?>
+                    <?php if (is_super_admin()): ?>
                     <a href="add_user.php" class="btn btn-primary btn-sm">
                         <i class="fas fa-user-plus"></i> Add User
                     </a>

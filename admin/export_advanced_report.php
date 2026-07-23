@@ -14,6 +14,13 @@ $filter_category = isset($_GET['filter_category']) ? clean_input($_GET['filter_c
 $filter_classification = isset($_GET['filter_classification']) ? clean_input($_GET['filter_classification']) : '';
 $threshold = isset($_GET['threshold']) ? floatval($_GET['threshold']) : 3.7;
 
+if (!is_super_admin()) {
+    $assigned_category = get_assigned_category();
+    if ($assigned_category) {
+        $filter_category = $assigned_category;
+    }
+}
+
 // Build filters for SQL
 $category_filter_sql = "";
 $classification_filter_sql = "";

@@ -11,7 +11,7 @@ if ($user_id === 0 || $user_id === $_SESSION['user_id']) {
     exit();
 }
 
-$sql = "SELECT role FROM users WHERE id = ? LIMIT 1";
+$sql = "SELECT role, category FROM users WHERE id = ? LIMIT 1";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -20,6 +20,14 @@ $target_user = $stmt->get_result()->fetch_assoc();
 if (!$target_user) {
     header('Location: view_users.php?error=User not found');
     exit();
+}
+
+if (!is_super_admin()) {
+    $assigned_category = get_assigned_category();
+    if ($assigned_category && $target_user['category'] !== $assigned_category) {
+        header('Location: view_users.php?error=Unauthorized action');
+        exit();
+    }
 }
 
 // Delete user

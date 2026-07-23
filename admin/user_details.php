@@ -23,23 +23,34 @@ if (!$user) {
     exit();
 }
 
+// Branch restriction check for non-super admins
+if (!is_super_admin()) {
+    $assigned_category = get_assigned_category();
+    if ($assigned_category && $user['category'] !== $assigned_category) {
+        header('Location: view_users.php');
+        exit();
+    }
+}
+
 require_once '../includes/header.php';
 ?>
 
 <div class="container">
     <div class="page-header">
-        <h1><i class="fas fa-user"></i> User Details</p>
+        <h1><i class="fas fa-user"></i> User Details</h1>
     </div>
 
     <!-- User Info Card -->
     <div class="card">
         <div class="card-header">
             <h3><i class="fas fa-user-circle"></i> User Information</h3>
+            <?php if (is_super_admin()): ?>
             <div style="margin-left: auto;">
                 <a href="edit_user.php?id=<?php echo $user_id; ?>" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
                     <i class="fas fa-edit"></i> Edit User Details
                 </a>
             </div>
+            <?php endif; ?>
         </div>
         <div class="user-info-grid">
             <div class="user-info-item">

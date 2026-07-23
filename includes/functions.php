@@ -75,24 +75,47 @@ function can_manage_amali_masters() {
     return is_super_admin() || (has_amali_access() && !is_category_amali_coordinator());
 }
 
-// Get assigned category for category-specific amali coordinator
+// Get assigned category for amali coordinator
 function get_assigned_category() {
     init_session();
-    if (!isset($_SESSION['admin_type'])) {
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         return null;
     }
     
     // Extract category from admin_type (e.g., 'surat_amali_coordinator' -> 'Surat')
-    $admin_type = $_SESSION['admin_type'];
-    $category_map = [
-        'surat_amali_coordinator' => 'Surat',
-        'marol_amali_coordinator' => 'Marol',
-        'karachi_amali_coordinator' => 'Karachi',
-        'nairobi_amali_coordinator' => 'Nairobi',
-        'muntasib_amali_coordinator' => 'Muntasib'
-    ];
+    if (isset($_SESSION['admin_type'])) {
+        $admin_type = $_SESSION['admin_type'];
+        $category_map = [
+            'surat_amali_coordinator' => 'Surat',
+            'marol_amali_coordinator' => 'Marol',
+            'karachi_amali_coordinator' => 'Karachi',
+            'nairobi_amali_coordinator' => 'Nairobi',
+            'muntasib_amali_coordinator' => 'Muntasib'
+        ];
+        
+        if (isset($category_map[$admin_type])) {
+            return $category_map[$admin_type];
+        }
+    }
     
-    return isset($category_map[$admin_type]) ? $category_map[$admin_type] : null;
+    if (isset($_SESSION['category']) && !empty($_SESSION['category'])) {
+        return $_SESSION['category'];
+    }
+    
+    if (isset($_SESSION['user_id']) && isset($GLOBALS['conn']) && $GLOBALS['conn'] instanceof mysqli) {
+        $stmt = $GLOBALS['conn']->prepare("SELECT category FROM users WHERE id = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $_SESSION['user_id']);
+            $stmt->execute();
+            $res = $stmt->get_result()->fetch_assoc();
+            if ($res && !empty($res['category'])) {
+                $_SESSION['category'] = $res['category'];
+                return $_SESSION['category'];
+            }
+        }
+    }
+    
+    return null;
 }
 
 // Redirect if not logged in

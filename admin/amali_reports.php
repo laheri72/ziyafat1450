@@ -27,11 +27,12 @@ $sort_by = isset($_GET['sort_by']) ? clean_input($_GET['sort_by']) : '';
 $sort_order = isset($_GET['sort_order']) ? clean_input($_GET['sort_order']) : 'desc';
 
 // Check admin type and set category restrictions
-$is_category_coordinator = is_category_amali_coordinator();
+$is_super = is_super_admin();
+$is_category_coordinator = !$is_super;
 $assigned_category = get_assigned_category();
 
-// If category amali coordinator, force filter to their assigned category
-if ($is_category_coordinator && $assigned_category) {
+// If not super admin (i.e. Amali Coordinator), force filter strictly to their assigned category
+if (!$is_super && $assigned_category) {
     $filter_category = $assigned_category;
 }
 

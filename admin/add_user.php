@@ -319,6 +319,15 @@ require_once '../includes/header.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
+    /* Global Container Fixes */
+    .container-user-mgmt {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        box-sizing: border-box;
+    }
+
     .page-header-flex {
         display: flex;
         justify-content: space-between;
@@ -327,17 +336,40 @@ require_once '../includes/header.php';
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
+    .page-header-title h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        color: var(--primary-700, #064e3b);
+    }
+    .page-header-title p {
+        color: #64748b;
+        margin-top: 4px;
+        font-size: 0.92rem;
+    }
+    .page-header-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
 
-    /* Tabs Component */
+    /* Tabs Component - Responsive & Touch Scrollable */
     .import-tabs-nav {
         display: flex;
         gap: 0.5rem;
         border-bottom: 2px solid #e2e8f0;
         margin-bottom: 1.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+    .import-tabs-nav::-webkit-scrollbar {
+        display: none;
     }
     .import-tab-btn {
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 0.5rem;
         padding: 0.75rem 1.25rem;
         font-weight: 600;
@@ -347,17 +379,19 @@ require_once '../includes/header.php';
         border: none;
         border-bottom: 3px solid transparent;
         cursor: pointer;
-        transition: all var(--transition-fast);
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        transition: all var(--transition-fast, 0.2s);
+        border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     .import-tab-btn:hover {
-        color: var(--primary-600);
-        background: rgba(0, 0, 102, 0.04);
+        color: var(--primary-600, #065f46);
+        background: rgba(6, 78, 59, 0.04);
     }
     .import-tab-btn.active {
-        color: var(--primary-600);
-        border-bottom-color: var(--primary-600);
-        background: rgba(0, 0, 102, 0.06);
+        color: var(--primary-600, #065f46);
+        border-bottom-color: var(--primary-600, #065f46);
+        background: rgba(6, 78, 59, 0.08);
     }
 
     /* Step Cards & Grid */
@@ -368,23 +402,22 @@ require_once '../includes/header.php';
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: var(--primary-600);
+        background: var(--primary-600, #065f46);
         color: white;
         font-weight: 700;
         font-size: 0.85rem;
         margin-right: 8px;
+        flex-shrink: 0;
     }
     .step-card {
         background: white;
         border: 1px solid #e2e8f0;
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-lg, 12px);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-sm);
-        transition: box-shadow 0.2s;
-    }
-    .step-card:hover {
-        box-shadow: var(--shadow);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+        width: 100%;
     }
     .step-card-header {
         display: flex;
@@ -395,6 +428,7 @@ require_once '../includes/header.php';
         margin-bottom: 1.25rem;
         padding-bottom: 0.75rem;
         border-bottom: 1px solid #f1f5f9;
+        width: 100%;
     }
     .step-card-header h3 {
         margin: 0;
@@ -402,44 +436,76 @@ require_once '../includes/header.php';
         display: flex;
         align-items: center;
         color: #1e293b;
+        flex-wrap: wrap;
     }
 
+    /* Form Grids */
     .form-grid-2 {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 1.25rem;
+        width: 100%;
+        box-sizing: border-box;
     }
     .form-grid-3 {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 1.25rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        color: #334155;
+        font-size: 0.9rem;
+    }
+    .form-group .form-control {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group .form-control:focus {
+        border-color: var(--primary-500, #064e3b);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15);
     }
 
     /* Dropzone */
     .dropzone-box {
         border: 2px dashed #cbd5e1;
-        border-radius: var(--radius-lg);
-        padding: 2.5rem 1.5rem;
+        border-radius: var(--radius-lg, 12px);
+        padding: 2.25rem 1.25rem;
         text-align: center;
         background: #f8fafc;
         cursor: pointer;
         transition: all 0.2s;
         position: relative;
+        width: 100%;
+        box-sizing: border-box;
     }
     .dropzone-box:hover, .dropzone-box.dragover {
-        border-color: var(--primary-500);
-        background: rgba(0, 0, 102, 0.03);
+        border-color: var(--primary-500, #064e3b);
+        background: rgba(6, 78, 59, 0.03);
     }
     .dropzone-icon {
-        font-size: 2.75rem;
-        color: var(--primary-400);
+        font-size: 2.5rem;
+        color: var(--primary-500, #064e3b);
         margin-bottom: 0.75rem;
     }
     .dropzone-text {
         font-size: 1rem;
         font-weight: 600;
         color: #334155;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.35rem;
+        word-break: break-word;
     }
     .dropzone-subtext {
         font-size: 0.85rem;
@@ -461,24 +527,27 @@ require_once '../includes/header.php';
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1rem;
         margin-bottom: 1.25rem;
+        width: 100%;
+        box-sizing: border-box;
     }
     .stat-pill {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 1rem;
-        border-radius: var(--radius-md);
+        padding: 0.85rem 1rem;
+        border-radius: var(--radius-md, 8px);
         background: #f8fafc;
         border: 1px solid #e2e8f0;
+        box-sizing: border-box;
     }
     .stat-pill-icon {
-        width: 42px;
-        height: 42px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         flex-shrink: 0;
     }
     .stat-pill.total .stat-pill-icon { background: #e0f2fe; color: #0369a1; }
@@ -487,21 +556,51 @@ require_once '../includes/header.php';
     .stat-pill-content h4 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #0f172a; }
     .stat-pill-content span { font-size: 0.8rem; color: #64748b; font-weight: 500; }
 
-    /* Review Table */
+    /* Review Table & Mobile Scroll Container */
     .review-table-container {
-        max-height: 420px;
+        width: 100%;
+        max-width: 100%;
+        max-height: 440px;
+        overflow-x: auto;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         border: 1px solid #e2e8f0;
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-md, 8px);
+        box-sizing: border-box;
+        background: white;
+    }
+    .review-table-container table {
+        width: 100%;
+        min-width: 680px; /* Guarantees columns never crush together */
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+    .review-table-container th {
+        background: #f1f5f9;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 10px 12px;
+        text-align: left;
+        color: #334155;
+        font-weight: 600;
+        border-bottom: 2px solid #cbd5e1;
+        white-space: nowrap;
+    }
+    .review-table-container td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
     }
     .table-badge {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 3px 8px;
+        padding: 4px 8px;
         border-radius: 12px;
         font-size: 0.75rem;
         font-weight: 600;
+        white-space: nowrap;
     }
     .table-badge.badge-valid { background: #dcfce7; color: #166534; }
     .table-badge.badge-error { background: #fee2e2; color: #991b1b; }
@@ -511,6 +610,35 @@ require_once '../includes/header.php';
         font-size: 0.8rem;
         margin-top: 4px;
         line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .mobile-scroll-hint {
+        display: none;
+        padding: 6px 10px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.78rem;
+        text-align: center;
+        border-radius: 6px;
+        margin-bottom: 8px;
+    }
+
+    /* Action Buttons Area */
+    .bulk-footer-actions {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        width: 100%;
+    }
+    .bulk-action-btns {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
     /* Loading Overlay */
@@ -521,20 +649,23 @@ require_once '../includes/header.php';
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(15, 23, 42, 0.6);
+        background: rgba(15, 23, 42, 0.75);
         z-index: 9999;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         color: white;
+        padding: 1rem;
+        box-sizing: border-box;
+        text-align: center;
     }
     .loading-spinner-overlay.show {
         display: flex;
     }
     .spinner-circle {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(255, 255, 255, 0.25);
         border-top: 4px solid #ffffff;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
@@ -544,15 +675,179 @@ require_once '../includes/header.php';
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
+    /* =======================================================
+       RESPONSIVE MEDIA QUERIES (Mobile & Tablet Optimization)
+       ======================================================= */
+    @media (max-width: 900px) {
+        .form-grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .container-user-mgmt {
+            padding: 0 0.75rem;
+        }
+        .page-header-flex {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.85rem;
+        }
+        .page-header-title h1 {
+            font-size: 1.35rem;
+        }
+        .page-header-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        .page-header-actions .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.65rem;
+            font-size: 0.9rem;
+        }
+
+        /* Tabs on mobile */
+        .import-tabs-nav {
+            display: flex;
+            width: 100%;
+            gap: 0.25rem;
+            padding-bottom: 4px;
+        }
+        .import-tab-btn {
+            flex: 1 1 auto;
+            padding: 0.65rem 0.75rem;
+            font-size: 0.85rem;
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* Step cards on mobile */
+        .step-card {
+            padding: 1rem 0.85rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .step-card-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+        }
+        .step-card-header h3 {
+            font-size: 1.05rem;
+        }
+        .step-card-header .btn,
+        .step-card-header .badge {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Form grids on mobile */
+        .form-grid-2,
+        .form-grid-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.85rem;
+        }
+
+        /* Dropzone on mobile */
+        .dropzone-box {
+            padding: 1.5rem 0.75rem;
+        }
+        .dropzone-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .dropzone-text {
+            font-size: 0.9rem;
+        }
+        .dropzone-subtext {
+            font-size: 0.75rem;
+        }
+
+        /* Stat Pills on mobile */
+        .stats-summary-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        .stat-pill {
+            padding: 0.75rem 0.85rem;
+        }
+        .stat-pill-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+        }
+        .stat-pill-content h4 {
+            font-size: 1.15rem;
+        }
+
+        /* Show mobile swipe indicator */
+        .mobile-scroll-hint {
+            display: block;
+        }
+
+        /* Review Controls Row */
+        .review-filter-row {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        .review-filter-row input {
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+        .review-filter-row button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Bottom Actions on mobile */
+        .bulk-footer-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+            gap: 0.85rem;
+        }
+        .bulk-action-btns {
+            display: flex;
+            flex-direction: column-reverse;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        .bulk-action-btns .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .single-action-btns {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        .single-action-btns .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+        }
+    }
 </style>
 
-<div class="container container-data">
+<div class="container container-user-mgmt">
     <div class="page-header-flex">
-        <div>
+        <div class="page-header-title">
             <h1><i class="fas fa-user-plus"></i> User Management</h1>
-            <p style="color: #64748b; margin-top: 4px;">Register single students or bulk import student batches with automated Excel validation</p>
+            <p>Register single students or bulk import student batches with automated Excel validation</p>
         </div>
-        <div class="action-buttons">
+        <div class="page-header-actions">
             <button type="button" class="btn btn-success btn-sm" onclick="downloadExcelTemplate()" title="Download Excel Spreadsheet Template (.xlsx)">
                 <i class="fas fa-file-excel"></i> Download Excel Template (.xlsx)
             </button>
@@ -563,13 +858,13 @@ require_once '../includes/header.php';
     </div>
 
     <?php if ($error): ?>
-        <div class="alert alert-error" style="margin-bottom: 1.5rem;">
+        <div class="alert alert-error" style="margin-bottom: 1.5rem; word-break: break-word;">
             <i class="fas fa-exclamation-triangle"></i> <?php echo $error; ?>
         </div>
     <?php endif; ?>
 
     <?php if ($success): ?>
-        <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+        <div class="alert alert-success" style="margin-bottom: 1.5rem; word-break: break-word;">
             <i class="fas fa-check-circle"></i> <?php echo $success; ?>
         </div>
     <?php endif; ?>
@@ -588,11 +883,11 @@ require_once '../includes/header.php';
     <!-- TAB 1: SINGLE USER REGISTRATION                              -->
     <!-- ============================================================ -->
     <div id="tab-single" class="tab-content" style="<?php echo $active_tab === 'single' ? 'display: block;' : 'display: none;'; ?>">
-        <div class="card">
+        <div class="card" style="box-sizing: border-box; width: 100%;">
             <div class="card-header">
                 <h3><i class="fas fa-user-edit"></i> Enter New User Details</h3>
             </div>
-            <form method="POST" action="" style="padding: var(--spacing-lg);">
+            <form method="POST" action="" style="padding: var(--spacing-lg, 1.25rem); box-sizing: border-box;">
                 <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                 <input type="hidden" name="form_action" value="single_user">
 
@@ -608,7 +903,7 @@ require_once '../includes/header.php';
                     </div>
                 </div>
 
-                <div class="form-grid-2">
+                <div class="form-grid-2" style="margin-top: 0.5rem;">
                     <div class="form-group">
                         <label for="category"><i class="fas fa-mosque"></i> Jamea (Branch)</label>
                         <select id="category" name="category" class="form-control">
@@ -631,7 +926,7 @@ require_once '../includes/header.php';
                     </div>
                 </div>
 
-                <div class="form-grid-2">
+                <div class="form-grid-2" style="margin-top: 0.5rem;">
                     <div class="form-group">
                         <label for="name"><i class="fas fa-user"></i> Full Name *</label>
                         <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Murtaza Bhai Shabbir Bhai" required>
@@ -643,7 +938,7 @@ require_once '../includes/header.php';
                     </div>
                 </div>
 
-                <div class="form-grid-2">
+                <div class="form-grid-2" style="margin-top: 0.5rem;">
                     <div class="form-group">
                         <label for="phone_number"><i class="fas fa-phone"></i> Phone Number</label>
                         <input type="tel" id="phone_number" name="phone_number" class="form-control" placeholder="+919876543210">
@@ -655,7 +950,7 @@ require_once '../includes/header.php';
                     </div>
                 </div>
 
-                <div class="form-grid-2">
+                <div class="form-grid-2" style="margin-top: 0.5rem;">
                     <div class="form-group">
                         <label for="role"><i class="fas fa-user-tag"></i> Role *</label>
                         <select id="role" name="role" class="form-control" required onchange="toggleSingleAdminType()">
@@ -678,7 +973,7 @@ require_once '../includes/header.php';
                     </div>
                 </div>
 
-                <div class="action-buttons" style="margin-top: 1rem;">
+                <div class="single-action-btns" style="margin-top: 1.25rem;">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Add Single User
                     </button>
@@ -719,7 +1014,7 @@ require_once '../includes/header.php';
                             <option value="Karachi">Karachi</option>
                             <option value="Nairobi">Nairobi</option>
                         </select>
-                        <small style="color: #64748b;">All students in this upload will be mapped to this branch.</small>
+                        <small style="color: #64748b; display: block; margin-top: 3px;">All students in this upload will be mapped to this branch.</small>
                     </div>
 
                     <div class="form-group">
@@ -728,7 +1023,7 @@ require_once '../includes/header.php';
                             <option value="user" selected>User (Standard Student / Member)</option>
                             <option value="admin">Admin</option>
                         </select>
-                        <small style="color: #64748b;">Sets default permissions for all imported accounts.</small>
+                        <small style="color: #64748b; display: block; margin-top: 3px;">Sets default permissions for all imported accounts.</small>
                     </div>
 
                     <div class="form-group">
@@ -739,7 +1034,7 @@ require_once '../includes/header.php';
                             <option value="Muntasebeen">Muntasebeen</option>
                             <option value="Muntasebaat">Muntasebaat</option>
                         </select>
-                        <small style="color: #64748b;">Applied to all students in this import batch.</small>
+                        <small style="color: #64748b; display: block; margin-top: 3px;">Applied to all students in this import batch.</small>
                     </div>
                 </div>
 
@@ -765,22 +1060,22 @@ require_once '../includes/header.php';
                     </button>
                 </div>
 
-                <div style="background: #f8fafc; border-left: 4px solid var(--primary-500); padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #1e293b; font-size: 0.95rem;">
+                <div style="background: #f8fafc; border-left: 4px solid var(--primary-500, #064e3b); padding: 0.85rem 1rem; border-radius: 6px; margin-bottom: 1.25rem;">
+                    <h4 style="margin: 0 0 0.4rem 0; color: #1e293b; font-size: 0.95rem;">
                         <i class="fas fa-info-circle text-primary"></i> Exact 5 Column Headers Specification:
                     </h4>
                     <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #475569;">
-                        Please ensure your Excel spreadsheet (.xlsx, .xls) contains the following 5 columns only:
+                        Please ensure your Excel spreadsheet contains the following 5 columns only:
                     </p>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                         <span class="badge badge-secondary" style="font-family: monospace;">TR Number *</span>
                         <span class="badge badge-secondary" style="font-family: monospace;">ITS Number *</span>
                         <span class="badge badge-secondary" style="font-family: monospace;">Full Name *</span>
                         <span class="badge badge-secondary" style="font-family: monospace;">Email *</span>
                         <span class="badge badge-secondary" style="font-family: monospace;">Phone Number (Optional)</span>
                     </div>
-                    <small style="display: block; margin-top: 0.5rem; color: #64748b;">
-                        <i class="fas fa-key"></i> <strong>Password Security Notice:</strong> Each student's initial password is automatically set to their <strong>TR Number</strong>. Students will change their password upon their first login.
+                    <small style="display: block; margin-top: 0.5rem; color: #64748b; line-height: 1.4;">
+                        <i class="fas fa-key"></i> <strong>Password Security Notice:</strong> Each student's initial password is automatically set to their <strong>TR Number</strong>.
                     </small>
                 </div>
 
@@ -790,14 +1085,18 @@ require_once '../includes/header.php';
                         <i class="fas fa-file-excel"></i>
                     </div>
                     <div class="dropzone-text" id="dropzonePromptText">Click or Drag & Drop Excel spreadsheet (.xlsx, .xls) here</div>
-                    <div class="dropzone-subtext">Automated real-time duplicate validation will run immediately upon selection (Excel format only)</div>
+                    <div class="dropzone-subtext">Real-time duplicate validation will run automatically upon file selection</div>
                 </div>
 
-                <div id="fileInfoBadge" style="display: none; margin-top: 1rem; padding: 0.75rem 1rem; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: var(--radius-md); color: #0369a1; font-size: 0.9rem;">
-                    <i class="fas fa-file-excel"></i> <span id="fileNameDisplay"><strong>Filename.xlsx</strong></span>
-                    <button type="button" class="btn btn-secondary btn-sm" style="float: right; padding: 2px 8px; font-size: 0.75rem;" onclick="clearUploadedFile()">
-                        <i class="fas fa-times"></i> Change File
-                    </button>
+                <div id="fileInfoBadge" style="display: none; margin-top: 0.85rem; padding: 0.65rem 0.85rem; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: var(--radius-md, 8px); color: #0369a1; font-size: 0.88rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <i class="fas fa-file-excel"></i> <span id="fileNameDisplay"><strong>Filename.xlsx</strong></span>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 10px; font-size: 0.75rem;" onclick="clearUploadedFile()">
+                            <i class="fas fa-times"></i> Change File
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -805,8 +1104,8 @@ require_once '../includes/header.php';
             <div class="step-card" id="validationReviewCard" style="display: none;">
                 <div class="step-card-header">
                     <h3><span class="step-badge">3</span> Meticulous Duplicate & Data Review</h3>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <input type="text" id="filterReviewInput" class="form-control" placeholder="Search preview rows..." style="width: 200px; padding: 4px 8px; font-size: 0.85rem;" onkeyup="filterReviewRows()">
+                    <div class="review-filter-row">
+                        <input type="text" id="filterReviewInput" class="form-control" placeholder="Search preview rows..." style="width: 200px; padding: 5px 10px; font-size: 0.85rem;" onkeyup="filterReviewRows()">
                         <button type="button" class="btn btn-secondary btn-sm" onclick="revalidateData()">
                             <i class="fas fa-sync-alt"></i> Re-Check Validation
                         </button>
@@ -839,23 +1138,28 @@ require_once '../includes/header.php';
                 </div>
 
                 <!-- Conflict Alert Banner -->
-                <div id="conflictAlertBanner" style="display: none; padding: 1rem; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: var(--radius-md); margin-bottom: 1.25rem; color: #991b1b;">
+                <div id="conflictAlertBanner" style="display: none; padding: 0.85rem 1rem; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: var(--radius-md, 8px); margin-bottom: 1rem; color: #991b1b; font-size: 0.9rem;">
                     <strong style="display: block; margin-bottom: 0.25rem;"><i class="fas fa-shield-alt"></i> Duplicate or Data Conflicts Detected!</strong>
                     <span id="conflictAlertDetails">Some TR Numbers or ITS Numbers already exist or are repeated in this spreadsheet. Please resolve highlighted rows below before proceeding.</span>
                 </div>
 
+                <!-- Mobile Horizontal Scroll Hint -->
+                <div class="mobile-scroll-hint">
+                    <i class="fas fa-arrows-left-right"></i> Scroll table horizontally to view full student details
+                </div>
+
                 <!-- Review Table -->
                 <div class="review-table-container">
-                    <table class="table-striped" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-                        <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 1;">
+                    <table class="table-striped">
+                        <thead>
                             <tr>
-                                <th style="padding: 10px 12px; text-align: center; width: 60px;">#</th>
-                                <th style="padding: 10px 12px;">TR Number</th>
-                                <th style="padding: 10px 12px;">ITS Number</th>
-                                <th style="padding: 10px 12px;">Full Name</th>
-                                <th style="padding: 10px 12px;">Email</th>
-                                <th style="padding: 10px 12px;">Phone</th>
-                                <th style="padding: 10px 12px; text-align: center; width: 140px;">Status</th>
+                                <th style="text-align: center; width: 50px;">#</th>
+                                <th style="width: 110px;">TR Number</th>
+                                <th style="width: 120px;">ITS Number</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th style="width: 130px;">Phone</th>
+                                <th style="text-align: center; width: 110px;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="reviewTableBody">
@@ -865,11 +1169,11 @@ require_once '../includes/header.php';
                 </div>
 
                 <!-- Import Actions -->
-                <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div class="bulk-footer-actions">
                     <div style="font-size: 0.85rem; color: #64748b;">
-                        <i class="fas fa-info-circle"></i> Only clean batches with zero unresolved conflicts can be committed to database.
+                        <i class="fas fa-info-circle"></i> Only clean batches with zero unresolved conflicts can be committed to the database.
                     </div>
-                    <div class="action-buttons">
+                    <div class="bulk-action-btns">
                         <button type="button" class="btn btn-secondary" onclick="clearUploadedFile()">
                             <i class="fas fa-times"></i> Discard Batch
                         </button>
@@ -886,7 +1190,7 @@ require_once '../includes/header.php';
 <!-- Fullscreen Spinner Overlay -->
 <div class="loading-spinner-overlay" id="loadingOverlay">
     <div class="spinner-circle"></div>
-    <h3 id="loadingText" style="margin: 0; font-size: 1.2rem; font-weight: 600;">Validating student records...</h3>
+    <h3 id="loadingText" style="margin: 0; font-size: 1.15rem; font-weight: 600;">Validating student records...</h3>
     <p style="color: #cbd5e1; font-size: 0.85rem; margin-top: 6px;">Please wait while the system checks database uniqueness</p>
 </div>
 
@@ -999,7 +1303,7 @@ function handleFileSelected(files) {
         return;
     }
 
-    document.getElementById('fileNameDisplay').innerHTML = `<strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+    document.getElementById('fileNameDisplay').innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
     document.getElementById('fileInfoBadge').style.display = 'block';
     document.getElementById('dropzonePromptText').textContent = 'Excel File Loaded: ' + file.name;
 
@@ -1179,7 +1483,7 @@ function renderReviewTable(result) {
 
         const hasError = row.status === 'error';
         if (hasError) {
-            tr.style.backgroundColor = 'rgba(239, 68, 68, 0.06)';
+            tr.style.backgroundColor = 'rgba(239, 68, 68, 0.07)';
         }
 
         let statusBadge = '';
@@ -1195,22 +1499,22 @@ function renderReviewTable(result) {
         }
 
         tr.innerHTML = `
-            <td style="padding: 10px 12px; text-align: center; color: #64748b; font-weight: 600;">${row.row_num}</td>
-            <td style="padding: 10px 12px; font-weight: 600; color: #1e293b;">
-                ${row.tr_number || '<span style="color: #ef4444;">[Missing]</span>'}
+            <td style="text-align: center; color: #64748b; font-weight: 600;">${row.row_num}</td>
+            <td style="font-weight: 600; color: #1e293b; white-space: nowrap;">
+                ${row.tr_number ? escapeHtml(row.tr_number) : '<span style="color: #ef4444;">[Missing]</span>'}
             </td>
-            <td style="padding: 10px 12px; font-family: monospace;">
-                ${row.its_number || '<span style="color: #ef4444;">[Missing]</span>'}
+            <td style="font-family: monospace; white-space: nowrap;">
+                ${row.its_number ? escapeHtml(row.its_number) : '<span style="color: #ef4444;">[Missing]</span>'}
             </td>
-            <td style="padding: 10px 12px;">
-                <strong>${escapeHtml(row.name) || '<span style="color: #ef4444;">[Missing Name]</span>'}</strong>
+            <td>
+                <strong>${row.name ? escapeHtml(row.name) : '<span style="color: #ef4444;">[Missing Name]</span>'}</strong>
                 ${errorDetails}
             </td>
-            <td style="padding: 10px 12px; color: #475569;">
-                ${escapeHtml(row.email) || '<span style="color: #ef4444;">[Missing]</span>'}
+            <td style="color: #475569; word-break: break-all;">
+                ${row.email ? escapeHtml(row.email) : '<span style="color: #ef4444;">[Missing]</span>'}
             </td>
-            <td style="padding: 10px 12px; color: #64748b;">${escapeHtml(row.phone_number) || '—'}</td>
-            <td style="padding: 10px 12px; text-align: center;">${statusBadge}</td>
+            <td style="color: #64748b; white-space: nowrap;">${row.phone_number ? escapeHtml(row.phone_number) : '—'}</td>
+            <td style="text-align: center;">${statusBadge}</td>
         `;
         tbody.appendChild(tr);
     });

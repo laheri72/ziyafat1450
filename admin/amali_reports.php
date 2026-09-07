@@ -806,7 +806,6 @@ require_once '../includes/header.php';
                             <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                             <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                             <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                            <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                         </select>
                     </div>
                 <?php else: ?>
@@ -978,7 +977,6 @@ require_once '../includes/header.php';
                             <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                             <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                             <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                            <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                         </select>
                     </div>
                 <?php else: ?>
@@ -1139,7 +1137,6 @@ require_once '../includes/header.php';
                             <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                             <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                             <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                            <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                         </select>
                     </div>
                 <?php else: ?>
@@ -1308,7 +1305,6 @@ require_once '../includes/header.php';
                             <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                             <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                             <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                            <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                         </select>
                     </div>
                 <?php else: ?>

@@ -702,7 +702,6 @@ require_once '../includes/header.php';
                             <option value="Marol" <?php echo $selected_branch === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                             <option value="Karachi" <?php echo $selected_branch === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                             <option value="Nairobi" <?php echo $selected_branch === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                            <option value="Muntasib" <?php echo $selected_branch === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                         </select>
                         <?php if ($is_category_coordinator): ?>
                             <!-- Pass disabled value via hidden input so it is submitted -->

@@ -73,7 +73,6 @@ require_once '../includes/header.php';
                         <option value="Marol" <?php echo $filter_category === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                         <option value="Karachi" <?php echo $filter_category === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                         <option value="Nairobi" <?php echo $filter_category === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                        <option value="Muntasib" <?php echo $filter_category === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                     <?php else: ?>
                         <option value="<?php echo htmlspecialchars($filter_category); ?>" selected><?php echo htmlspecialchars($filter_category ?: 'Assigned Branch'); ?></option>
                     <?php endif; ?>
@@ -151,12 +150,16 @@ require_once '../includes/header.php';
                                 <td data-label="Joined"><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
                                 <td data-label="Actions">
                                     <div class="action-buttons">
-                                        <a href="user_details.php?id=<?php echo $user['id']; ?>" class="btn btn-primary btn-sm">
+                                        <a href="user_details.php?id=<?php echo $user['id']; ?>" class="btn btn-primary btn-sm" title="View Details">
                                             <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="edit_user.php?id=<?php echo $user['id']; ?>" class="btn btn-warning btn-sm" title="Edit User">
+                                            <i class="fas fa-edit"></i>
                                         </a>
                                         <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                             <a href="delete_user.php?id=<?php echo $user['id']; ?>" 
                                                class="btn btn-danger btn-sm"
+                                               title="Delete User"
                                                onclick="return confirm('Are you sure you want to delete this user?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>

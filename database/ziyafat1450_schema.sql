@@ -186,7 +186,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `admin_type` enum('super_admin','finance_admin','amali_coordinator','surat_amali_coordinator','marol_amali_coordinator','karachi_amali_coordinator','nairobi_amali_coordinator','muntasib_amali_coordinator') DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `its_number` (`its_number`)
+  UNIQUE KEY `its_number` (`its_number`),
+  KEY `tr_number` (`tr_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ========================================

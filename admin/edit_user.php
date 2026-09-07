@@ -457,7 +457,6 @@ require_once '../includes/header.php';
                     <option value="Marol" <?php echo $user['category'] === 'Marol' ? 'selected' : ''; ?>>Marol</option>
                     <option value="Karachi" <?php echo $user['category'] === 'Karachi' ? 'selected' : ''; ?>>Karachi</option>
                     <option value="Nairobi" <?php echo $user['category'] === 'Nairobi' ? 'selected' : ''; ?>>Nairobi</option>
-                    <option value="Muntasib" <?php echo $user['category'] === 'Muntasib' ? 'selected' : ''; ?>>Muntasib</option>
                 </select>
                 <?php if (!is_super_admin()): ?>
                     <small>Only Super Admin can change Jamea</small>
